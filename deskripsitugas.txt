@@ -1,0 +1,14 @@
+Membuat aplikasi berbasis web yg dapat melakukananalisis terhadap data, menampilkan visualisasi, dan memiliki user interface interaktif
+
+Cara memulai:
+• Buat kelompok
+• Pikirkan topik
+• Cari dan lihat ketersediaan data
+• Algoritma apa yg bisa digunakan
+• Visualisasi yg kira-kira sesuai
+• Library yg bisa digunakan
+
+Aturan:
+• Related paper dipublish dalam kurun waktu 5 tahun terakhir
+• Dataset antar kelompok tidak boleh sama
+• Analitik yg dilakukan usahakan berbeda (jika 1 kelompok membuat sentiment analisis, kelompok lain usahakan untuk tidak menggunakan topik sentiment analisis)
