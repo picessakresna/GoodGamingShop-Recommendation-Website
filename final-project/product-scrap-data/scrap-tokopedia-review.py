@@ -149,9 +149,9 @@ def load_ulasan(link):
 def get_link():
     df = pd.read_csv('product-scrap-data/data-produk/product-goodgamingshop.csv')
 
-    file_number = 741  # Initialize file number
+    file_number = 1  # Initialize file number
 
-    for index, row in df.iloc[2471:].iterrows():
+    for index, row in df.iloc[0:].iterrows():
         nama_produk_judul = ' '.join(row['Nama Produk'].split()[:1])  # Limit to first four words
         nama_produk = row['Nama Produk']
         link = row['Link']
