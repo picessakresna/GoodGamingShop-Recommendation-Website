@@ -24,7 +24,7 @@ def loaded_page(self, element):
     return myElem
 
 def save_produk_info_to_csv(product_info):
-    directory = 'product-scrap-data/data-produk'
+    directory = 'data-collection-preprocessing/data-produk'
     if not os.path.exists(directory):
         os.makedirs(directory)
 

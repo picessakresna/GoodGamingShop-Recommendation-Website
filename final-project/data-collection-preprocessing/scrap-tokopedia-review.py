@@ -147,7 +147,7 @@ def load_ulasan(link):
     return reviews
 
 def get_link():
-    df = pd.read_csv('product-scrap-data/data-produk/product-goodgamingshop.csv')
+    df = pd.read_csv('data-collection-preprocessing/data-produk/product-goodgamingshop.csv')
 
     file_number = 1  # Initialize file number
 
@@ -159,8 +159,8 @@ def get_link():
         reviews = load_ulasan(link)
         
         if reviews is not None:
-            save_reviews_to_csv('product-scrap-data/data-ulasan', nama_produk_judul, nama_produk, reviews, file_number)
-            save_reviewed_product_to_csv('product-scrap-data/data-produk', nama_produk)
+            save_reviews_to_csv('data-collection-preprocessing/data-ulasan', nama_produk_judul, nama_produk, reviews, file_number)
+            save_reviewed_product_to_csv('data-collection-preprocessing/data-produk', nama_produk)
             file_number += 1  # Increment file number for the next iteration
         else:
             print(f"No reviews found for '{nama_produk_judul}'. CSV file not saved.")
