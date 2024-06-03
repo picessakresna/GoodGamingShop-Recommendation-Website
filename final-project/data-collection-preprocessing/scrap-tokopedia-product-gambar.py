@@ -92,6 +92,6 @@ for index, row in df.iterrows():
 driver.quit()
 
 # Save the updated df to a new CSV file
-df.to_csv('updated_products.csv', index=False)
+df.to_csv('clean_product-goodgamingshop.csv', index=False)
 
 print(df)
