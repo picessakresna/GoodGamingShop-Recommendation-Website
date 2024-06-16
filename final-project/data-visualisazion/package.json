@@ -18,6 +18,7 @@
     "@emotion/styled": "11.10.8",
     "@mui/icons-material": "5.11.16",
     "@mui/material": "5.12.3",
+    "ajv": "^8.16.0",
     "chart.js": "4.3.0",
     "chroma-js": "2.4.2",
     "prop-types": "15.8.1",
@@ -59,14 +60,14 @@
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "eslint": "8.39.0",
-    "eslint-config-prettier": "8.8.0",
+    "eslint": "^8.39.0",
+    "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-jsx-a11y": "6.7.1",
-    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
-    "prettier": "2.8.8"
+    "prettier": "^2.8.8"
   },
   "overrides": {
     "svgo": "3.0.2"
