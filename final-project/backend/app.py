@@ -74,7 +74,7 @@ algo = SVD()
 algo.fit(trainset)
 
 # Buat pivot table untuk collaborative filtering
-pivot_table = df_reviews.pivot_table(index='id_user', columns='id_produk', values='rating_user').fillna(0)
+pivot_table = df_reviews.pivot_table(index='id_produk', columns='id_user', values='rating_user').fillna(0)
 
 # Hitung cosine similarity matriks untuk collaborative filtering
 cosine_sim_cf = cosine_similarity(pivot_table.T, pivot_table.T)
@@ -117,7 +117,7 @@ def get_recommendations(product_id, user_id, n_recommendations=10):
     mf_scores = sorted(mf_scores, key=lambda x: x[1], reverse=True)
 
     final_indices = [i[0] for i in mf_scores[:n_recommendations]]
-
+    
     # Kembalikan produk paling mirip dengan informasi lengkap dan skor
     recommendations = []
     for idx in final_indices:
