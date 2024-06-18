@@ -1,56 +1,41 @@
 from flask import Flask, request, jsonify
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import sigmoid_kernel
+from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
 # Load data
-df_merged = pd.read_csv('../data-collection-preprocessing/final_product_ulasan-goodgamingshop.csv')  # Ganti dengan path ke file CSV Anda
+df = pd.read_csv('../data-collection-preprocessing/final_product_ulasan-goodgamingshop.csv')  # Ganti dengan path ke file CSV Anda
 
-# Prepare data for recommendation
-tfv = TfidfVectorizer(min_df=3, max_features=None, strip_accents="unicode", analyzer="word",
-                      token_pattern=r"\w{1,}", ngram_range=(1, 3), stop_words="english")
+# Create pivot table
+pivot_table = df.pivot_table(index='id_user', columns='id_produk', values='rating_user').fillna(0)
 
-rec_data = df_merged.copy()
-rec_data.drop_duplicates(subset="nama_produk", keep="first", inplace=True)
-rec_data.reset_index(drop=True, inplace=True)
-genres = rec_data["kategori"].str.split(", | , | ,").astype(str)
-tfv_matrix = tfv.fit_transform(genres)
+# Compute the cosine similarity matrix
+item_similarity = cosine_similarity(pivot_table.T)
+item_similarity_df = pd.DataFrame(item_similarity, index=pivot_table.columns, columns=pivot_table.columns)
 
-sig = sigmoid_kernel(tfv_matrix, tfv_matrix)
-rec_indices = pd.Series(rec_data.index, index=rec_data["nama_produk"]).drop_duplicates()
-
-def give_recommendation(title, sig=sig):
-    try:
-        idx = rec_indices[title]
-    except KeyError:
-        return f"Product '{title}' not found.", 404
-
-    sig_score = list(enumerate(sig[idx]))
-    sig_score = sorted(sig_score, key=lambda x: x[1], reverse=True)
-    sig_score = sig_score[1:11]
-    product_indices = [i[0] for i in sig_score]
-
-    rec_dic = {
-        "No": list(range(1, 11)),
-        "Nama Produk": df_merged["nama_produk"].iloc[product_indices].values.tolist(),
-        "Rating": df_merged["rating_user"].iloc[product_indices].values.tolist()
-    }
+def get_item_recommendations(product_id, n_recommendations=10):
+    # Get similarity scores for the item
+    similar_scores = item_similarity_df[product_id].sort_values(ascending=False)
+    # Get top n similar items
+    top_items = similar_scores.iloc[1:n_recommendations+1].index
+    top_scores = similar_scores.iloc[1:n_recommendations+1].values
     
-    return rec_dic
+    recommendations = df[df['id_produk'].isin(top_items)][['id_produk', 'nama_produk']].drop_duplicates().reset_index(drop=True)
+    recommendations['similarity_score'] = top_scores
+    return recommendations.to_dict(orient='records')
 
 @app.route('/recommend', methods=['GET'])
 def recommend():
-    title = request.args.get('title')
-    if not title:
-        return jsonify({"error": "Please provide a product title"}), 400
+    product_id = request.args.get('product_id')
+    if not product_id:
+        return jsonify({"error": "Please provide a product ID"}), 400
     
-    recommendation = give_recommendation(title)
-    if isinstance(recommendation, tuple):
-        return jsonify({"error": recommendation[0]}), recommendation[1]
-    
-    return jsonify(recommendation)
+    try:
+        recommendations = get_item_recommendations(product_id)
+        return jsonify(recommendations)
+    except KeyError:
+        return jsonify({"error": f"Product ID '{product_id}' not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
