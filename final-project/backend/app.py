@@ -74,7 +74,19 @@ algo = SVD()
 algo.fit(trainset)
 
 # Buat pivot table untuk collaborative filtering
-pivot_table = df_reviews.pivot_table(index='id_produk', columns='id_user', values='rating_user').fillna(0)
+# Buat dataframe dengan semua kombinasi id_user dan id_produk
+users = df_reviews['id_user'].unique()
+products = df_products['id_produk'].unique()
+all_combinations = pd.DataFrame([(user, prod) for user in users for prod in products], columns=['id_user', 'id_produk'])
+
+# Gabungkan dengan df_reviews untuk memasukkan rating jika ada
+merged_data = pd.merge(all_combinations, df_reviews, on=['id_user', 'id_produk'], how='left')
+
+# Mengisi nilai NaN dengan 0
+merged_data.fillna(0, inplace=True)
+
+# Buat pivot table
+pivot_table = merged_data.pivot_table(index='id_user', columns='id_produk', values='rating_user', fill_value=0)
 
 # Hitung cosine similarity matriks untuk collaborative filtering
 cosine_sim_cf = cosine_similarity(pivot_table.T, pivot_table.T)
@@ -113,11 +125,16 @@ def get_recommendations(product_id, user_id, n_recommendations=10):
     top_indices = [i[0] for i in combined_scores[:n_recommendations]]
 
     # Dapatkan prediksi dari Matrix Factorization
-    mf_scores = [(i, algo.predict(user_id, df_products['id_produk'][i]).est) for i in top_indices]
+    mf_scores = []
+    for i in top_indices:
+        # Validasi i agar tidak melebihi panjang df_products
+        if i < len(df_products):
+            mf_scores.append((i, algo.predict(user_id, df_products.iloc[i]['id_produk']).est))
+    
     mf_scores = sorted(mf_scores, key=lambda x: x[1], reverse=True)
 
     final_indices = [i[0] for i in mf_scores[:n_recommendations]]
-    
+
     # Kembalikan produk paling mirip dengan informasi lengkap dan skor
     recommendations = []
     for idx in final_indices:
