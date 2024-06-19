@@ -224,32 +224,8 @@ def get_products_with_zero_sales(df_products, user_id, algo, max_recommendations
         recommendations.append(product_info)
     
     return recommendations
-    
-@app.route('/products-with-zero-sales', methods=['GET'])
-def products_with_zero_sales():
-    user_id = request.args.get('user_id')
-    if not user_id:
-        return jsonify({"error": "Please provide user_id"}), 400
-    
-    recommendations = get_products_with_zero_sales(df_products, user_id, algo)
-    if isinstance(recommendations, tuple):
-        return jsonify({"error": recommendations[0]}), recommendations[1]
-    
-    return jsonify(recommendations)
 
-@app.route('/unrated-products', methods=['GET'])
-def unrated_products():
-    user_id = request.args.get('user_id')
-    if not user_id:
-        return jsonify({"error": "Please provide user_id"}), 400
-    
-    recommendations = get_unrated_products(user_id, df_reviews, df_products, algo)
-    if isinstance(recommendations, tuple):
-        return jsonify({"error": recommendations[0]}), recommendations[1]
-    
-    return jsonify(recommendations)
-
-# Route to recommend endpoint
+# Route to Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
 @app.route('/recommend', methods=['GET'])
 def recommend():
     product_id = request.args.get('product_id')
@@ -263,7 +239,7 @@ def recommend():
 
     return jsonify(recommendations)
 
-# Route to recommend user-based endpoint
+# Route to User-Based Recommendation System Using Collaborative Filltering and Matrix Factorization Algorithms
 @app.route('/recommend_user_based', methods=['GET'])
 def recommend_user_based():
     user_id = request.args.get('user_id')
@@ -274,6 +250,32 @@ def recommend_user_based():
     if isinstance(recommendations, tuple):
         return jsonify({"error": recommendations[0]}), recommendations[1]
 
+    return jsonify(recommendations)
+
+# Route to Product Recommendation System that has Never Been Purchased by Users
+@app.route('/unrated-products', methods=['GET'])
+def unrated_products():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Please provide user_id"}), 400
+    
+    recommendations = get_unrated_products(user_id, df_reviews, df_products, algo)
+    if isinstance(recommendations, tuple):
+        return jsonify({"error": recommendations[0]}), recommendations[1]
+    
+    return jsonify(recommendations)
+
+# Route to Recommendation System for Products that Have Never Been Sold
+@app.route('/products-with-zero-sales', methods=['GET'])
+def products_with_zero_sales():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Please provide user_id"}), 400
+    
+    recommendations = get_products_with_zero_sales(df_products, user_id, algo)
+    if isinstance(recommendations, tuple):
+        return jsonify({"error": recommendations[0]}), recommendations[1]
+    
     return jsonify(recommendations)
 
 # Route to get all products
