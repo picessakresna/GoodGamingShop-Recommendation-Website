@@ -6,7 +6,6 @@ from surprise import Dataset, Reader, SVD
 import re
 import nltk
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
-import os
 
 # Download NLTK stop words
 nltk.download('stopwords')
@@ -141,7 +140,14 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
         similar_user_ratings = pivot_table.iloc[similar_user_idx]
         for product_id, rating in similar_user_ratings.items():
             if rating > 0 and product_id not in user_ratings[user_ratings > 0].index:
-                recommended_products[product_id] = recommended_products.get(product_id, 0) + rating
+                if product_id in recommended_products:
+                    recommended_products[product_id].append(rating)
+                else:
+                    recommended_products[product_id] = [rating]
+
+    # Average the ratings and ensure they are within the 0-5 range
+    for product_id in recommended_products:
+        recommended_products[product_id] = min(5, sum(recommended_products[product_id]) / len(recommended_products[product_id]))
 
     # Predict ratings using matrix factorization
     mf_scores = []
@@ -161,16 +167,17 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
         final_recommendations[product_id] = final_recommendations.get(product_id, 0) + score
     
     final_recommendations = sorted(final_recommendations.items(), key=lambda x: x[1], reverse=True)
-    top_product_indices = [indices[idx] for idx, score in final_recommendations[:n_recommendations]]
 
     recommendations = []
-    for idx in top_product_indices:
+    for product_id, score in final_recommendations[:n_recommendations]:
+        idx = indices[product_id]
         product_info = df_products.iloc[idx].to_dict()
-        product_info['cf_score'] = final_recommendations[idx][1]
-        
+        product_info['cf_score'] = score  # score di sini adalah skor kombinasi CF dan MF
+
         recommendations.append(product_info)
 
     return recommendations
+
 
 # Route to recommend endpoint
 @app.route('/recommend', methods=['GET'])
