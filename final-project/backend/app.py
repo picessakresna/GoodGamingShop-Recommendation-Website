@@ -114,7 +114,7 @@ def get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tf
     for idx in final_indices:
         product_info = df_products.iloc[idx].to_dict()
         product_info['tfidf_score'] = get_score_by_idx(combined_scores, idx)
-        product_info['cf_score'] = get_score_by_idx(mf_scores, idx)
+        product_info['cf_mf_score'] = get_score_by_idx(mf_scores, idx)
         
         recommendations.append(product_info)
 
@@ -172,20 +172,68 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
     for product_id, score in final_recommendations[:n_recommendations]:
         idx = indices[product_id]
         product_info = df_products.iloc[idx].to_dict()
-        product_info['cf_score'] = score  # score di sini adalah skor kombinasi CF dan MF
+        product_info['cf_mf_score'] = score  # score di sini adalah skor kombinasi CF dan MF
 
         recommendations.append(product_info)
 
     return recommendations
 
-def get_unrated_products(user_id, df_reviews, max_products=50):
-    # Filter data untuk produk yang belum pernah diberi rating oleh user_id
+def get_unrated_products(user_id, df_reviews, df_products, algo, max_products=50):
+    # Filter data for products that have never been rated by user_id
     user_reviews = df_reviews[df_reviews['id_user'] == user_id]
     rated_products = set(user_reviews['id_produk'])
     all_products = set(df_products['id_produk'])
-    unrated_products = list(all_products - rated_products)[:max_products]
+    unrated_products = list(all_products - rated_products)
     
-    return unrated_products
+    # Predicted ratings for products that have not yet been rated
+    predicted_ratings = []
+    for product_id in unrated_products:
+        pred_rating = algo.predict(user_id, product_id).est
+        predicted_ratings.append((product_id, pred_rating))
+    
+    # Sort by highest predicted rating
+    predicted_ratings = sorted(predicted_ratings, key=lambda x: x[1], reverse=True)
+    top_unrated_products = predicted_ratings[:max_products]
+    
+    recommendations = []
+    for product_id, score in top_unrated_products:
+        product_info = df_products[df_products['id_produk'] == product_id].iloc[0].to_dict()
+        product_info['mf_score'] = score
+        recommendations.append(product_info)
+
+    return recommendations
+
+def get_products_with_zero_sales(df_products, user_id, algo, max_recommendations=50):
+    products_with_zero_sales = df_products[df_products['jumlah_terjual'] == 0]['id_produk'].tolist()
+    
+    mf_scores = []
+    for product_id in products_with_zero_sales:
+        pred_rating = algo.predict(user_id, product_id).est
+        mf_scores.append((product_id, pred_rating))
+    
+    # Sort the products by prediction score and take the best one
+    mf_scores = sorted(mf_scores, key=lambda x: x[1], reverse=True)
+    top_products = mf_scores[:max_recommendations]
+
+    recommendations = []
+    for product_id, score in top_products:
+        product_info = df_products[df_products['id_produk'] == product_id].iloc[0].to_dict()
+        product_info['mf_score'] = score
+        recommendations.append(product_info)
+    
+    return recommendations
+    
+@app.route('/products-with-zero-sales', methods=['GET'])
+def products_with_zero_sales():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Please provide user_id"}), 400
+    
+    recommendations = get_products_with_zero_sales(df_products, user_id, algo)
+    if isinstance(recommendations, tuple):
+        return jsonify({"error": recommendations[0]}), recommendations[1]
+    
+    return jsonify(recommendations)
 
 @app.route('/unrated-products', methods=['GET'])
 def unrated_products():
@@ -193,16 +241,11 @@ def unrated_products():
     if not user_id:
         return jsonify({"error": "Please provide user_id"}), 400
     
-    unrated_product_ids = get_unrated_products(user_id, df_reviews)
+    recommendations = get_unrated_products(user_id, df_reviews, df_products, algo)
+    if isinstance(recommendations, tuple):
+        return jsonify({"error": recommendations[0]}), recommendations[1]
     
-    unrated_products_info = []
-    for product_id in unrated_product_ids:
-        idx = indices.get(product_id)
-        if idx is not None:
-            product_info = df_products.iloc[idx].to_dict()
-            unrated_products_info.append(product_info)
-    
-    return jsonify(unrated_products_info)
+    return jsonify(recommendations)
 
 # Route to recommend endpoint
 @app.route('/recommend', methods=['GET'])
