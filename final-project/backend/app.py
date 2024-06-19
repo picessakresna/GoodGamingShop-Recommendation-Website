@@ -125,7 +125,30 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
             'rekomendasi': recommendations
         })
     
-    return all_recommendations
+    # Flatten combined_recommendations into a list without id_produk structure
+    flattened_recommendations = []
+    seen_products = set()
+    for recommendation in all_recommendations:
+        for product_info in recommendation['rekomendasi']:
+            product_id = product_info['id_produk']
+            if product_id not in seen_products:
+                flattened_recommendations.append(product_info)
+                seen_products.add(product_id)
+            else:
+                # If product already in the list, update if the new score is higher
+                for existing_product in flattened_recommendations:
+                    if existing_product['id_produk'] == product_id:
+                        if product_info['skor_cf_mf'] > existing_product['skor_cf_mf']:
+                            existing_product.update(product_info)
+                        elif product_info['skor_cf_mf'] == existing_product['skor_cf_mf']:
+                            if product_info['skor_tfidf'] > existing_product['skor_tfidf']:
+                                existing_product.update(product_info)
+                        break
+
+    # Sort flattened_recommendations by skor_cf_mf, skor_tfidf in descending order
+    flattened_recommendations_sorted = sorted(flattened_recommendations, key=lambda x: (x['skor_cf_mf'], x['skor_tfidf']), reverse=True)
+
+    return flattened_recommendations_sorted
 
 # User-Based Recommendation System Using Collaborative Filltering and Matrix Factorization Algorithms
 def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_recommendations=50):
@@ -321,7 +344,7 @@ def get_user_by_id(user_id):
 
 if __name__ == '__main__':
     # Load and clean data
-    df_products, df_reviews, df_products_cleaned = load_and_clean_data('./data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', './data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
+    df_products, df_reviews, df_products_cleaned = load_and_clean_data('../data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', '../data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
