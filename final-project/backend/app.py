@@ -74,7 +74,7 @@ def create_collaborative_filtering_pivot(df_reviews, df_products):
 
     return pivot_table, cosine_sim_cf
 
-# Function to get recommendations
+# Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
 def get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo, n_recommendations=10):
     try:
         idx = indices[product_id]
@@ -120,7 +120,7 @@ def get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tf
 
     return recommendations
 
-# Function to get user-based recommendations
+# User-Based Recommendation System Using Collaborative Filltering and Matrix Factorization Algorithms
 def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_recommendations=50):
     if user_id not in pivot_table.index:
         return f"User ID '{user_id}' not found.", 404
@@ -178,6 +178,7 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
 
     return recommendations
 
+# Product Recommendation System that has Never Been Purchased by Users
 def get_unrated_products(user_id, df_reviews, df_products, algo, max_products=50):
     # Filter data for products that have never been rated by user_id
     user_reviews = df_reviews[df_reviews['id_user'] == user_id]
@@ -203,6 +204,7 @@ def get_unrated_products(user_id, df_reviews, df_products, algo, max_products=50
 
     return recommendations
 
+# Recommendation System for Products that Have Never Been Sold
 def get_products_with_zero_sales(df_products, user_id, algo, max_recommendations=50):
     products_with_zero_sales = df_products[df_products['jumlah_terjual'] == 0]['id_produk'].tolist()
     
