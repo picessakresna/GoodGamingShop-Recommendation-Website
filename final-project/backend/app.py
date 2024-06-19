@@ -13,10 +13,14 @@ nltk.download('stopwords')
 app = Flask(__name__)
 
 # Function to clean text data
+# Function to clean text data
 def clean_text(text):
     text = re.sub(r'[^\w\s]', '', text)
     text = text.lower()
+    text = re.sub(r'\s+', ' ', text)
+    text = text.strip()
     return text
+
 
 # Function to get score by index from a list of scores
 def get_score_by_idx(scores_list, idx):
