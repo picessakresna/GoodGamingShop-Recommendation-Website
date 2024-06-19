@@ -240,7 +240,7 @@ def recommend():
     if not product_ids or not user_id:
         return jsonify({"error": "Please provide both product_ids and user_id"}), 400
     
-    product_ids = product_ids.split(',')  # Split product_ids by comma
+    product_ids = list(set(product_ids.split(',')))
     
     recommendations = get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo)
     if isinstance(recommendations, tuple):
