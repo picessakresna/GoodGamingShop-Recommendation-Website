@@ -13,14 +13,14 @@ nltk.download('stopwords')
 
 app = Flask(__name__)
 
-# Function to get image paths from a folder
-def get_image_paths(image_folder):
-    image_paths = []
-    for root, dirs, files in os.walk(image_folder):
-        for file in files:
-            if file.endswith(('png', 'jpg', 'jpeg')):
-                image_paths.append(os.path.join(root, file))
-    return image_paths
+# # Function to get image paths from a folder
+# def get_image_paths(image_folder):
+#     image_paths = []
+#     for root, dirs, files in os.walk(image_folder):
+#         for file in files:
+#             if file.endswith(('png', 'jpg', 'jpeg')):
+#                 image_paths.append(os.path.join(root, file))
+#     return image_paths
 
 # Function to clean text data
 def clean_text(text):
@@ -126,8 +126,8 @@ def get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tf
         product_info['tfidf_score'] = get_score_by_idx(combined_scores, idx)
         product_info['cf_score'] = get_score_by_idx(mf_scores, idx)
 
-        image_folder = product_info['image_path']
-        product_info['image_paths'] = get_image_paths(image_folder)
+        # image_folder = product_info['image_path']
+        # product_info['image_paths'] = get_image_paths(image_folder)
         
         recommendations.append(product_info)
 
@@ -178,10 +178,10 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
     recommendations = []
     for idx in top_product_indices:
         product_info = df_products.iloc[idx].to_dict()
-        product_info['cf_mf_score'] = final_recommendations[idx][1]
+        product_info['cf_score'] = final_recommendations[idx][1]
 
-        image_folder = product_info['image_path']
-        product_info['image_paths'] = get_image_paths(image_folder)
+        # image_folder = product_info['image_path']
+        # product_info['image_paths'] = get_image_paths(image_folder)
         
         recommendations.append(product_info)
 
