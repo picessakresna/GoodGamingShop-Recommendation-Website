@@ -75,50 +75,57 @@ def create_collaborative_filtering_pivot(df_reviews, df_products):
     return pivot_table, cosine_sim_cf
 
 # Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
-def get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo, n_recommendations=10):
-    try:
-        idx = indices[product_id]
-    except KeyError:
-        return f"Product ID '{product_id}' not found.", 404
-    
-    if user_id not in df_reviews['id_user'].unique():
-        return f"User ID '{user_id}' not found.", 404
-
-    sim_scores_tfidf = list(enumerate(cosine_sim_tfidf[idx]))
-    sim_scores_cf = list(enumerate(cosine_sim_cf[idx]))
-
-    sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
-    sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
-
-    sim_scores_tfidf = sim_scores_tfidf[1:n_recommendations+1]
-    sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
-
-    combined_scores = {}
-    for score in sim_scores_tfidf:
-        combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
-    for score in sim_scores_cf:
-        combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
-    
-    combined_scores = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
-    top_indices = [i[0] for i in combined_scores[:n_recommendations]]
-
-    mf_scores = []
-    for i in top_indices:
-        if i < len(df_products):
-            mf_scores.append((i, algo.predict(user_id, df_products.iloc[i]['id_produk']).est))
-    
-    mf_scores = sorted(mf_scores, key=lambda x: x[1], reverse=True)
-    final_indices = [i[0] for i in mf_scores[:n_recommendations]]
-
-    recommendations = []
-    for idx in final_indices:
-        product_info = df_products.iloc[idx].to_dict()
-        product_info['tfidf_score'] = get_score_by_idx(combined_scores, idx)
-        product_info['cf_mf_score'] = get_score_by_idx(mf_scores, idx)
+def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo, n_recommendations=10):
+    all_recommendations = []
+    for product_id in product_ids:
+        try:
+            idx = indices[product_id]
+        except KeyError:
+            return f"Product ID '{product_id}' not found.", 404
         
-        recommendations.append(product_info)
+        if user_id not in df_reviews['id_user'].unique():  # Ensure df_reviews is accessible here
+            return f"User ID '{user_id}' not found.", 404
 
-    return recommendations
+        sim_scores_tfidf = list(enumerate(cosine_sim_tfidf[idx]))
+        sim_scores_cf = list(enumerate(cosine_sim_cf[idx]))
+
+        sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
+        sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
+
+        sim_scores_tfidf = sim_scores_tfidf[1:n_recommendations+1]
+        sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
+
+        combined_scores = {}
+        for score in sim_scores_tfidf:
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
+        for score in sim_scores_cf:
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
+        
+        combined_scores = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
+        top_indices = [i[0] for i in combined_scores[:n_recommendations]]
+
+        mf_scores = []
+        for i in top_indices:
+            if i < len(df_products):
+                mf_scores.append((i, algo.predict(user_id, df_products.iloc[i]['id_produk']).est))
+        
+        mf_scores = sorted(mf_scores, key=lambda x: x[1], reverse=True)
+        final_indices = [i[0] for i in mf_scores[:n_recommendations]]
+
+        recommendations = []
+        for idx in final_indices:
+            product_info = df_products.iloc[idx].to_dict()
+            product_info['skor_tfidf'] = get_score_by_idx(combined_scores, idx)
+            product_info['skor_cf_mf'] = get_score_by_idx(mf_scores, idx)
+            
+            recommendations.append(product_info)
+
+        all_recommendations.append({
+            'id_produk': product_id,
+            'rekomendasi': recommendations
+        })
+    
+    return all_recommendations
 
 # User-Based Recommendation System Using Collaborative Filltering and Matrix Factorization Algorithms
 def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_recommendations=50):
@@ -172,7 +179,7 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
     for product_id, score in final_recommendations[:n_recommendations]:
         idx = indices[product_id]
         product_info = df_products.iloc[idx].to_dict()
-        product_info['cf_mf_score'] = score  # score di sini adalah skor kombinasi CF dan MF
+        product_info['skor_cf_mf'] = score  # score di sini adalah skor kombinasi CF dan MF
 
         recommendations.append(product_info)
 
@@ -199,7 +206,7 @@ def get_unrated_products(user_id, df_reviews, df_products, algo, max_products=50
     recommendations = []
     for product_id, score in top_unrated_products:
         product_info = df_products[df_products['id_produk'] == product_id].iloc[0].to_dict()
-        product_info['mf_score'] = score
+        product_info['skor_mf'] = score
         recommendations.append(product_info)
 
     return recommendations
@@ -220,23 +227,41 @@ def get_products_with_zero_sales(df_products, user_id, algo, max_recommendations
     recommendations = []
     for product_id, score in top_products:
         product_info = df_products[df_products['id_produk'] == product_id].iloc[0].to_dict()
-        product_info['mf_score'] = score
+        product_info['skor_mf'] = score
         recommendations.append(product_info)
     
     return recommendations
+
+# Route to Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
+@app.route('/recommend', methods=['GET'])
+def recommend():
+    product_ids = request.args.get('product_ids')
+    user_id = request.args.get('user_id')
+    if not product_ids or not user_id:
+        return jsonify({"error": "Please provide both product_ids and user_id"}), 400
     
-@app.route('/products-with-zero-sales', methods=['GET'])
-def products_with_zero_sales():
+    product_ids = list(set(product_ids.split(',')))
+    
+    recommendations = get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo)
+    if isinstance(recommendations, tuple):
+        return jsonify({"error": recommendations[0]}), recommendations[1]
+
+    return jsonify(recommendations)
+
+# Route to User-Based Recommendation System Using Collaborative Filltering and Matrix Factorization Algorithms
+@app.route('/recommend_user_based', methods=['GET'])
+def recommend_user_based():
     user_id = request.args.get('user_id')
     if not user_id:
         return jsonify({"error": "Please provide user_id"}), 400
-    
-    recommendations = get_products_with_zero_sales(df_products, user_id, algo)
+
+    recommendations = get_user_based_recommendations(user_id, df_products, pivot_table, algo)
     if isinstance(recommendations, tuple):
         return jsonify({"error": recommendations[0]}), recommendations[1]
-    
+
     return jsonify(recommendations)
 
+# Route to Product Recommendation System that has Never Been Purchased by Users
 @app.route('/unrated-products', methods=['GET'])
 def unrated_products():
     user_id = request.args.get('user_id')
@@ -249,31 +274,17 @@ def unrated_products():
     
     return jsonify(recommendations)
 
-# Route to recommend endpoint
-@app.route('/recommend', methods=['GET'])
-def recommend():
-    product_id = request.args.get('product_id')
-    user_id = request.args.get('user_id')
-    if not product_id or not user_id:
-        return jsonify({"error": "Please provide both product_id and user_id"}), 400
-
-    recommendations = get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo)
-    if isinstance(recommendations, tuple):
-        return jsonify({"error": recommendations[0]}), recommendations[1]
-
-    return jsonify(recommendations)
-
-# Route to recommend user-based endpoint
-@app.route('/recommend_user_based', methods=['GET'])
-def recommend_user_based():
+# Route to Recommendation System for Products that Have Never Been Sold
+@app.route('/products-with-zero-sales', methods=['GET'])
+def products_with_zero_sales():
     user_id = request.args.get('user_id')
     if not user_id:
         return jsonify({"error": "Please provide user_id"}), 400
-
-    recommendations = get_user_based_recommendations(user_id, df_products, pivot_table, algo)
+    
+    recommendations = get_products_with_zero_sales(df_products, user_id, algo)
     if isinstance(recommendations, tuple):
         return jsonify({"error": recommendations[0]}), recommendations[1]
-
+    
     return jsonify(recommendations)
 
 # Route to get all products
