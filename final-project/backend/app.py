@@ -123,7 +123,7 @@ def get_recommendations(product_id, user_id, df_products, indices, cosine_sim_tf
 
 # Function to get user-based recommendations
 def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_recommendations=50):
-    if user_id not in df_reviews['id_user'].unique():
+    if user_id not in pivot_table.index:
         return f"User ID '{user_id}' not found.", 404
 
     user_idx = pivot_table.index.get_loc(user_id)
@@ -198,6 +198,38 @@ def recommend_user_based():
         return jsonify({"error": recommendations[0]}), recommendations[1]
 
     return jsonify(recommendations)
+
+# Route to get all products
+@app.route('/products', methods=['GET'])
+def get_all_products():
+    products = df_products.to_dict(orient='records')
+    return jsonify(products)
+
+# Route to get product by ID
+@app.route('/products/<product_id>', methods=['GET'])
+def get_product_by_id(product_id):
+    product = df_products[df_products['id_produk'] == product_id]
+    if product.empty:
+        return jsonify({"error": f"Product ID '{product_id}' not found"}), 404
+
+    product_info = product.iloc[0].to_dict()
+    return jsonify(product_info)
+
+# Route to get all users
+@app.route('/users', methods=['GET'])
+def get_all_users():
+    users = df_reviews[['id_user']].drop_duplicates().to_dict(orient='records')
+    return jsonify(users)
+
+# Route to get user by ID
+@app.route('/users/<user_id>', methods=['GET'])
+def get_user_by_id(user_id):
+    user = df_reviews[df_reviews['id_user'] == user_id]
+    if user.empty:
+        return jsonify({"error": f"User ID '{user_id}' not found"}), 404
+
+    user_info = user.to_dict(orient='records')
+    return jsonify(user_info)
 
 if __name__ == '__main__':
     # Load and clean data
