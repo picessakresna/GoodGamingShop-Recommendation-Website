@@ -178,6 +178,31 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
 
     return recommendations
 
+def get_unrated_products(user_id, df_reviews, max_products=50):
+    # Filter data untuk produk yang belum pernah diberi rating oleh user_id
+    user_reviews = df_reviews[df_reviews['id_user'] == user_id]
+    rated_products = set(user_reviews['id_produk'])
+    all_products = set(df_products['id_produk'])
+    unrated_products = list(all_products - rated_products)[:max_products]
+    
+    return unrated_products
+
+@app.route('/unrated-products', methods=['GET'])
+def unrated_products():
+    user_id = request.args.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Please provide user_id"}), 400
+    
+    unrated_product_ids = get_unrated_products(user_id, df_reviews)
+    
+    unrated_products_info = []
+    for product_id in unrated_product_ids:
+        idx = indices.get(product_id)
+        if idx is not None:
+            product_info = df_products.iloc[idx].to_dict()
+            unrated_products_info.append(product_info)
+    
+    return jsonify(unrated_products_info)
 
 # Route to recommend endpoint
 @app.route('/recommend', methods=['GET'])
