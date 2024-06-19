@@ -310,7 +310,7 @@ def get_user_by_id(user_id):
 
 if __name__ == '__main__':
     # Load and clean data
-    df_products, df_reviews, df_products_cleaned = load_and_clean_data('../data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', '../data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
+    df_products, df_reviews, df_products_cleaned = load_and_clean_data('./data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', './data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
