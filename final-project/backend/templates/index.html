@@ -4,8 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f2f2f2;
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .login-container select,
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .login-container button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+        .login-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
+
+<div class="login-container">
     <h2>Login</h2>
+    <form id="loginForm">
+        <label for="username">Select User</label>
+        <select id="username" name="username" required>
+            <option value="">--Select User--</option>
+            <option value="user1">User 1</option>
+            <option value="user2">User 2</option>
+            <option value="user3">User 3</option>
+            <!-- Add more users as needed -->
+        </select>
+        
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        // Prevent the default form submission
+        event.preventDefault();
+
+        // Get the value of the selected username
+        var username = document.getElementById('username').value;
+
+        // Basic validation
+        if (username === "") {
+            alert("Please select a user.");
+            return;
+        }
+
+        // Redirect to home.html
+        window.location.href = 'home.html';
+    });
+</script>
+
 </body>
 </html>
