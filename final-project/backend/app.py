@@ -13,7 +13,7 @@ nltk.download('stopwords')
 
 app = Flask(__name__)
 CORS(app)
-# Function to clean text data
+
 # Function to clean text data
 def clean_text(text):
     text = re.sub(r'[^\w\s]', '', text)
@@ -129,8 +129,7 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
         recommendations = []
         for idx in final_indices:
             product_info = df_products.iloc[idx].to_dict()
-            product_info['skor_tfidf'] = get_score_by_idx(combined_scores, idx)
-            product_info['skor_cf_mf'] = get_score_by_idx(mf_scores, idx)
+            product_info['skor'] = get_score_by_idx(mf_scores, idx)
             
             recommendations.append(product_info)
 
@@ -152,15 +151,12 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
                 # If product already in the list, update if the new score is higher
                 for existing_product in flattened_recommendations:
                     if existing_product['id_produk'] == product_id:
-                        if product_info['skor_cf_mf'] > existing_product['skor_cf_mf']:
+                        if product_info['skor'] > existing_product['skor']:
                             existing_product.update(product_info)
-                        elif product_info['skor_cf_mf'] == existing_product['skor_cf_mf']:
-                            if product_info['skor_tfidf'] > existing_product['skor_tfidf']:
-                                existing_product.update(product_info)
                         break
 
-    # Sort flattened_recommendations by skor_cf_mf, skor_tfidf in descending order
-    flattened_recommendations_sorted = sorted(flattened_recommendations, key=lambda x: (x['skor_cf_mf'], x['skor_tfidf']), reverse=True)
+    # Sort flattened_recommendations by skor in descending order
+    flattened_recommendations_sorted = sorted(flattened_recommendations, key=lambda x: (x['skor']), reverse=True)
 
     if n_recommendations is not None:
         flattened_recommendations_sorted = flattened_recommendations_sorted[:n_recommendations]
@@ -226,7 +222,7 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
     for product_id, score in final_recommendations:
         idx = indices[product_id]
         product_info = df_products.iloc[idx].to_dict()
-        product_info['skor_cf_mf'] = score  # score di sini adalah skor kombinasi CF dan MF
+        product_info['skor'] = score
 
         recommendations.append(product_info)
 
@@ -257,7 +253,7 @@ def get_unrated_products(user_id, df_reviews, df_products, algo, n_recommendatio
     recommendations = []
     for product_id, score in top_unrated_products:
         product_info = df_products[df_products['id_produk'] == product_id].iloc[0].to_dict()
-        product_info['skor_mf'] = score
+        product_info['skor'] = score
         recommendations.append(product_info)
 
     return recommendations
@@ -282,7 +278,7 @@ def get_products_with_zero_sales(df_products, user_id, algo, n_recommendations=N
     recommendations = []
     for product_id, score in top_products:
         product_info = df_products[df_products['id_produk'] == product_id].iloc[0].to_dict()
-        product_info['skor_mf'] = score
+        product_info['skor'] = score
         recommendations.append(product_info)
     
     return recommendations
@@ -401,7 +397,7 @@ def home():
 
 if __name__ == '__main__':
     # Load and clean data
-    df_products, df_reviews, df_products_cleaned = load_and_clean_data('./data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', './data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
+    df_products, df_reviews, df_products_cleaned = load_and_clean_data('../data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', '../data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
