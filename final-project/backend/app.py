@@ -69,14 +69,19 @@ def prepare_collaborative_filtering_data(df_reviews):
 
 # Function to create pivot table for collaborative filtering
 def create_collaborative_filtering_pivot(df_reviews, df_products):
-    users = df_reviews['id_user'].unique()
+    # Deduplicate and aggregate ratings (e.g., taking the mean rating if there are duplicates)
+    df_reviews_agg = df_reviews.groupby(['id_user', 'id_produk'])['rating_user'].mean().reset_index()
+    
+    users = df_reviews_agg['id_user'].unique()
     products = df_products['id_produk'].unique()
+    
     all_combinations = pd.DataFrame([(user, prod) for user in users for prod in products], columns=['id_user', 'id_produk'])
-    merged_data = pd.merge(all_combinations, df_reviews, on=['id_user', 'id_produk'], how='left')
+    merged_data = pd.merge(all_combinations, df_reviews_agg, on=['id_user', 'id_produk'], how='left')
     merged_data.fillna(0, inplace=True)
+    
     pivot_table = merged_data.pivot_table(index='id_user', columns='id_produk', values='rating_user', fill_value=0)
     cosine_sim_cf = cosine_similarity(pivot_table)
-
+    
     return pivot_table, cosine_sim_cf
 
 # Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
