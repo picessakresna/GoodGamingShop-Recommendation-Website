@@ -39,8 +39,9 @@ def load_and_clean_data(products_file, reviews_file):
     df_products_cleaned = df_products.copy()
     df_products_cleaned['deskripsi'] = df_products_cleaned['deskripsi'].apply(clean_text)
     df_products_cleaned['kategori'] = df_products_cleaned['kategori'].apply(clean_text)
+    df_products_cleaned['nama_produk'] = df_products_cleaned['nama_produk'].apply(clean_text)
     df_products_cleaned.drop_duplicates(subset=['id_produk'], keep='first', inplace=True)
-    df_products_cleaned['combined_features'] = df_products_cleaned['deskripsi'].fillna('') + ' ' + df_products_cleaned['kategori'].fillna('')
+    df_products_cleaned['combined_features'] = df_products_cleaned['kategori'].fillna('') + ' ' + df_products_cleaned['nama_produk'].fillna('') + ' ' + df_products_cleaned['deskripsi'].fillna('')
 
     return df_products, df_reviews, df_products_cleaned
 
