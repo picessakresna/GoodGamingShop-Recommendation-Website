@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 from surprise import Dataset, Reader, SVD
 import re
 import nltk
@@ -22,6 +23,18 @@ def clean_text(text):
     text = text.strip()
     return text
 
+# Function to normalize numerical features
+def normalize_features(df):
+    # Extract numerical features to be normalized
+    numerical_features = ['diskon', 'jumlah_terjual', 'rating', 'rating_counter']
+
+    # Initialize MinMaxScaler
+    scaler = MinMaxScaler()
+
+    # Fit and transform numerical features
+    df[numerical_features] = scaler.fit_transform(df[numerical_features])
+
+    return df
 
 # Function to get score by index from a list of scores
 def get_score_by_idx(scores_list, idx):
@@ -42,8 +55,33 @@ def load_and_clean_data(products_file, reviews_file):
     df_products_cleaned['nama_produk'] = df_products_cleaned['nama_produk'].apply(clean_text)
     df_products_cleaned.drop_duplicates(subset=['id_produk'], keep='first', inplace=True)
     df_products_cleaned['combined_features'] = df_products_cleaned['kategori'].fillna('') + ' ' + df_products_cleaned['nama_produk'].fillna('') + ' ' + df_products_cleaned['deskripsi'].fillna('')
+    df_products_cleaned = normalize_features(df_products_cleaned)
 
     return df_products, df_reviews, df_products_cleaned
+
+# Function to calculate product numeric features scores
+def calculate_product_scores(df_products_cleaned):
+    # Define weights for each feature
+    discount_weight = 0.4
+    sales_weight = 0.1
+    rating_weight = 0.4
+    rating_counter_weight = 0.1
+
+    # Initialize an empty list to store (idx, score) pairs
+    scores = []
+
+    # Iterate through each row in df_products_cleaned
+    for idx, product in df_products_cleaned.iterrows():
+        # Calculate the score for the current product
+        total_score = (discount_weight * product['diskon'] +
+                       sales_weight * product['jumlah_terjual'] +
+                       rating_weight * product['rating'] +
+                       rating_counter_weight * product['rating_counter'])
+
+        # Append (idx, score) pair to scores list
+        scores.append((idx, total_score))
+
+    return scores
 
 # Function to create TF-IDF matrix and calculate cosine similarity
 def calculate_tfidf_cosine_similarity(df):
@@ -86,7 +124,7 @@ def create_collaborative_filtering_pivot(df_reviews, df_products):
     return pivot_table, cosine_sim_cf
 
 # Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
-def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo, n_recommendations=None):
+def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations=None):
     all_recommendations = []
     for product_id in product_ids:
         try:
@@ -102,7 +140,8 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
 
         sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
         sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
-
+        num_scores = sorted(num_scores, key=lambda x: x[1], reverse=True)
+        print(num_scores)
         if n_recommendations is not None:
             sim_scores_tfidf = sim_scores_tfidf[1:n_recommendations+1]
             sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
@@ -111,6 +150,8 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
         for score in sim_scores_tfidf:
             combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
         for score in sim_scores_cf:
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
+        for score in num_scores:
             combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
         
         combined_scores = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
@@ -185,7 +226,7 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
     if n_recommendations is not None:
         similar_users_scores = similar_users_scores[1:n_recommendations+1]
     else:
-        similar_users_scores = similar_users_scores[1:]  # Tanpa batasan n_recommendations
+        similar_users_scores = similar_users_scores[1:]
 
     recommended_products = {}
     for user in similar_users_scores:
@@ -300,7 +341,7 @@ def recommend():
     
     product_ids = list(set(product_ids.split(',')))
     
-    recommendations = get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, cosine_sim_cf, algo, n_recommendations)
+    recommendations = get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations)
     if isinstance(recommendations, tuple):
         return jsonify({"error": recommendations[0]}), recommendations[1]
 
@@ -407,6 +448,9 @@ if __name__ == '__main__':
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
+
+    # Calculate product numeric features scores
+    num_scores = calculate_product_scores(df_products_cleaned)
 
     # Prepare data for collaborative filtering
     algo = prepare_collaborative_filtering_data(df_reviews)
