@@ -141,18 +141,19 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
         sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
         sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
         num_scores = sorted(num_scores, key=lambda x: x[1], reverse=True)
-        print(num_scores)
+        
         if n_recommendations is not None:
             sim_scores_tfidf = sim_scores_tfidf[1:n_recommendations+1]
             sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
-
+            num_scores = num_scores[:n_recommendations]
+        
         combined_scores = {}
         for score in sim_scores_tfidf:
-            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * 0.38
         for score in sim_scores_cf:
-            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * 0.34
         for score in num_scores:
-            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1]
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * 0.28
         
         combined_scores = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
 
