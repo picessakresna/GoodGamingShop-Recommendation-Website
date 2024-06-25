@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative Filtering Website | GoodGamingShop</title>
+
+  <!--
+    - custom css link
+  -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style-prefix.css') }}">
+
+  <!--
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+    <!-- HEADER -->
+    <header>
+        <div class="header-main">
+            <div class="container">
+                <a href="#" class="header-logo">
+                    <img src="{{ url_for('static', filename='/images/logo/logo.png') }}" alt="GGS logo" width="140" height="36">
+                </a>
+                <div class="header-user-actions">
+                    <a href="{{ url_for('reset_selected_ids') }}" class="reset-link">
+                        <button class="action-btn">
+                            <ion-icon name="person-outline"></ion-icon>
+                        </button>
+                    </a>
+                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                        <button class="action-btn" id="daftar-belanja-btn">
+                            <ion-icon name="bag-handle-outline"></ion-icon>
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <nav class="desktop-navigation-menu">
+            <div class="container">
+                <ul class="desktop-menu-category-list">
+                    <li class="menu-category">
+                        <a href="{{ url_for('home', user_id=user_id) }}" class="menu-title">Home</a>
+                    </li>
+                    <li class="menu-category">
+                        <a href="{{ url_for('all_items', user_id=user_id)}}" class="menu-title">All Items</a>
+                    </li>          
+                    <li class="menu-category">
+                        <a href="{{ url_for('recommend_page', user_id=user_id)}}" class="menu-title">Recommended</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="mobile-bottom-navigation">
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                <button class="action-btn">
+                    <ion-icon name="bag-handle-outline"></ion-icon>
+                </button>
+            </a>
+            <button class="action-btn">
+                <ion-icon name="home-outline"></ion-icon>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="heart-outline"></ion-icon>
+            </button>
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="grid-outline"></ion-icon>
+            </button>
+        </div>
+        <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
+            <div class="menu-top">
+                <h2 class="menu-title">Menu</h2>
+                <button class="menu-close-btn" data-mobile-menu-close-btn>
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+  <main>
+
+    <div class="product-container">
+
+      <div class="container">
+
+        <div class="product-box">
+          {% block content %}
+          <div class="product-main">
+            <h2 class="title">All Items</h2>
+            <div class="product-grid">
+                {% for items in allitems %}
+                <div class="showcase">
+                    <div class="showcase-banner">
+                        <img src="{{ url_for('static', filename='images/images/' ~ items.id_produk ~ '/image_' ~ items.id_produk ~ '_0.png') }}" alt="gambar 1" width="300" class="product-img default">
+                        <img src="{{ url_for('static', filename='images/images/' ~ items.id_produk ~ '/image_' ~ items.id_produk ~ '_1.png') }}" alt="gambar 2" width="300" class="product-img hover">
+                        <div class="showcase-actions">
+                            <button type="button" class="btn-action" data-id="{{ items.id_produk }}">
+                                <ion-icon name="bag-add-outline"></ion-icon>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="showcase-content">
+                        <a href="{{ items.link }}">
+                            <h3 class="showcase-title">{{ items.nama_produk }}</h3>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form id="selected_ids_form" action="{{ url_for('save_selected_ids') }}" method="post">
+                <input type="hidden" id="selected_ids_input" name="selected_ids">
+            </form>
+
+            <div class="pagination">
+              {% if page > 1 %}
+              <a href="{{ url_for('all_items', user_id=user_id, page=page-1) }}">Previous</a>
+              {% endif %}
+              {% if page < total_pages %}
+              <a href="{{ url_for('all_items', user_id=user_id, page=page+1) }}">Next</a>
+              {% endif %}
+          </div>
+        </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            var selectedIds = [];
+
+            // Retrieve initial selected IDs from session
+            $.get('{{ url_for("get_selected_ids") }}', function(data) {
+                selectedIds = data.selected_ids;
+                console.log('Initial selected IDs:', selectedIds);
+            });
+
+            $('.btn-action').click(function() {
+                var productId = $(this).data('id');
+                if (!selectedIds.includes(productId)) {
+                    selectedIds.push(productId);
+                    console.log('Selected IDs:', selectedIds);
+                    saveSelectedIds();
+                }
+            });
+
+            // Reset button/link behavior
+            $('.reset-link').click(function(event) {
+                event.preventDefault();
+                $.post('{{ url_for("reset_selected_ids") }}', function() {
+                    window.location.href = "{{ url_for('index') }}";
+                });
+            });
+
+            // AJAX request to save selected IDs
+            function saveSelectedIds() {
+                $.post('{{ url_for("save_selected_ids") }}', { 'selected_ids[]': selectedIds }, function(response) {
+                    console.log('Selected IDs saved successfully');
+                });
+            }
+
+            // Handle click on the link to daftar_belanja
+            $('#daftar-belanja-btn').click(function(event) {
+                event.preventDefault();
+                var redirectUrl = $(this).closest('a').attr('href');
+                saveSelectedIds();
+                setTimeout(function() { // Delay to ensure IDs are saved before redirect
+                    window.location.href = redirectUrl;
+                }, 500);
+            });
+        });
+    </script>
+  {% endblock %}
+</body>
+
+</html>

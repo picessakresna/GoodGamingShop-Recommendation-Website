@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collaborative Filtering Website | GoodGamingShop</title>
+
+  <!-- custom css link -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style-prefix.css') }}">
+
+  <!-- google font link -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- D3.js script -->
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-main">
+            <div class="container">
+                <a href="#" class="header-logo">
+                    <img src="{{ url_for('static', filename='/images/logo/logo.png') }}" alt="GGS logo" width="140" height="36">
+                </a>
+                <div class="header-user-actions">
+                    <button class="action-btn">
+                        <ion-icon name="person-outline"></ion-icon>
+                    </button>
+                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                        <button class="action-btn">
+                            <ion-icon name="bag-handle-outline"></ion-icon>
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <nav class="desktop-navigation-menu">
+            <div class="container">
+                <ul class="desktop-menu-category-list">
+                    <li class="menu-category">
+                        <a href="{{ url_for('home', user_id=user_id) }}" class="menu-title">Home</a>
+                    </li>
+                    <li class="menu-category">
+                        <a href="{{ url_for('all_items', user_id=user_id)}}" class="menu-title">All Items</a>
+                    </li>          
+                    <li class="menu-category">
+                        <a href="{{ url_for('recommend_page', user_id=user_id)}}" class="menu-title">Recommended</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="mobile-bottom-navigation">
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="menu-outline"></ion-icon>
+            </button>
+            <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                <button class="action-btn">
+                    <ion-icon name="bag-handle-outline"></ion-icon>
+                </button>
+            </a>
+            <button class="action-btn">
+                <ion-icon name="home-outline"></ion-icon>
+            </button>
+            <button class="action-btn">
+                <ion-icon name="heart-outline"></ion-icon>
+            </button>
+            <button class="action-btn" data-mobile-menu-open-btn>
+                <ion-icon name="grid-outline"></ion-icon>
+            </button>
+        </div>
+        <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
+            <div class="menu-top">
+                <h2 class="menu-title">Menu</h2>
+                <button class="menu-close-btn" data-mobile-menu-close-btn>
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <h3 class="page-title">Recommended For You</h3>
+            <p>The items recommended to you are based on what you've added to your cart, here the list</p>
+            <div class="product-main">
+                <div class="product-grid">
+                    {% for product in selected_products %}
+                    <div class="showcase">
+                        <div class="showcase-banner">
+                            <img src="{{ url_for('static', filename='images/images/' ~ product.id_produk ~ '/image_' ~ product.id_produk ~ '_0.png') }}" alt="gambar 1" width="300" class="product-img default">
+                            <img src="{{ url_for('static', filename='images/images/' ~ product.id_produk ~ '/image_' ~ product.id_produk ~ '_1.png') }}" alt="gambar 2" width="300" class="product-img hover">
+                        </div>
+                        <div class="showcase-content">
+                            <a href="#">
+                                <h3 class="showcase-title">{{ product.nama_produk }}</h3>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                
+                </div>
+            </div>
+            <p>Also based your previous purchases, that show in this graph</p>
+
+             <!-- D3.js Container -->
+            <div id="d3-container" style="display: flex; justify-content: center;"></div>
+
+            <p>We suggested you to buy this product</p>
+            <div class="product-main">
+                <div class="product-grid">
+                    {% for recommend in recommendations %}
+                    <div class="showcase">
+                        <div class="showcase-banner">
+                            <img src="{{ url_for('static', filename='images/images/' ~ recommend.id_produk ~ '/image_' ~ recommend.id_produk ~ '_0.png') }}" alt="gambar 1" width="300" class="product-img default">
+                            <img src="{{ url_for('static', filename='images/images/' ~ recommend.id_produk ~ '/image_' ~ recommend.id_produk ~ '_1.png') }}" alt="gambar 2" width="300" class="product-img hover">
+                        </div>
+                        <div class="showcase-content">
+                            <a href="#">
+                                <h3 class="showcase-title">{{ recommend.nama_produk }}</h3>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                
+                </div>
+            </div>
+        </div>
+    </main>
+   
+
+    <!-- D3.js Basic Script -->
+    <script>
+    // Extract categories from Flask-provided data
+    const products = {{ products | tojson }};
+    const categories = {};
+
+    products.forEach(product => {
+        const category = product.kategori_3;
+        if (categories[category]) {
+        categories[category]++;
+        } else {
+        categories[category] = 1;
+        }
+    });
+
+    // Convert categories object to array
+    const data = Object.entries(categories).map(([category, count]) => ({
+        category: category,
+        count: count
+    }));
+
+    // Sort data in descending order based on count
+    data.sort((a, b) => b.count - a.count);
+
+    // D3.js setup
+    const width = 1300;  // Increased width for better centering
+    const height = 400;
+    const margin = { top: 20, right: 30, bottom: 40, left: 200 };  // Adjusted margins for better fit and text wrapping
+
+    const svg = d3.select("#d3-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.count)])
+        .nice()
+        .range([0, width - margin.left - margin.right]);
+
+    const y = d3.scaleBand()
+        .domain(data.map(d => d.category))
+        .range([0, height - margin.top - margin.bottom])
+        .padding(0.1);
+
+    // Add bars
+    svg.selectAll("rect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", d => y(d.category))
+        .attr("width", d => x(d.count))
+        .attr("height", y.bandwidth())
+        .attr("fill", "teal");
+
+    // Add count labels
+    svg.selectAll(".count-label")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", "count-label")
+        .attr("x", d => x(d.count) + 10)  // Adjust position to be at the end of the bar + 10 pixels
+        .attr("y", d => y(d.category) + y.bandwidth() / 2)
+        .attr("dy", "0.35em")
+        .style("font-size", "12px")
+        .text(d => d.count);
+
+    // Add category labels with wrapping
+    svg.selectAll(".category-label")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", "category-label")
+        .attr("x", 100)  // Adjust text positioning (increased gap)
+        .attr("y", d => y(d.category) + y.bandwidth() / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "end")
+        .style("font-size", "10px")
+        .text(d => d.category)
+        .call(wrap, 500);  // Call wrap function for text wrapping
+
+    // Function to wrap text
+    function wrap(text, width) {
+        text.each(function() {
+        var text = d3.select(this),
+            words = text.text().split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1,  // ems
+            y = text.attr("y"),
+            dy = parseFloat(text.attr("dy")),
+            tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
+        while (word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+            if (tspan.node().getComputedTextLength() > width) {
+            line.pop();
+            tspan.text(line.join(" "));
+            line = [word];
+            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", `${++lineNumber * lineHeight + dy}em`).text(word);
+            }
+        }
+        });
+    }
+    </script>
+
+
+
+    <!-- ionicon link -->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+</body>
+
+</html>
