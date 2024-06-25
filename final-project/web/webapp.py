@@ -13,14 +13,8 @@ import requests
 nltk.download('stopwords')
 
 app = Flask(__name__)
-<<<<<<< HEAD:final-project/web/webapp.py
 app.secret_key = '8dadea2232c8bc81e3b557f2a9e9f7a2'
 
-=======
-CORS(app)
-
-# Function to clean text data
->>>>>>> 697820016e26d42c07c62baf0976c3465a04f4c0:final-project/backend/app.py
 def clean_text(text):
     text = re.sub(r'[^\w\s]', '', text)
     text = text.lower()
