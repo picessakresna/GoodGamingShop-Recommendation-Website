@@ -145,6 +145,9 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
             sim_scores_tfidf = sim_scores_tfidf[1:n_recommendations+1]
             sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
             num_scores = num_scores[:n_recommendations]
+        else:
+            sim_scores_tfidf = sim_scores_tfidf[1:]
+            sim_scores_cf = sim_scores_cf[1:]
         
         combined_scores = {}
         for score in sim_scores_tfidf:
