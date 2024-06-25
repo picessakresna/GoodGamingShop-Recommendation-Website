@@ -122,8 +122,17 @@ def create_collaborative_filtering_pivot(df_reviews, df_products):
     
     return pivot_table, cosine_sim_cf
 
+def get_cf_product_scores(sim_scores_cf, df_reviews, indices):
+    similar_user_ids = [df_reviews['id_user'].unique()[idx] for idx, _ in sim_scores_cf]
+    similar_user_reviews = df_reviews[df_reviews['id_user'].isin(similar_user_ids)]
+    product_ratings = similar_user_reviews.groupby('id_produk')['rating_user'].mean()
+    scaled_ratings = product_ratings / 5.0
+    product_scores = [(indices[product_id], score) for product_id, score in scaled_ratings.items()]
+    
+    return product_scores
+
 # Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
-def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations=None):
+def get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_table, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations=None):
     all_recommendations = []
     for product_id in product_ids:
         try:
@@ -131,11 +140,13 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
         except KeyError:
             return f"Product ID '{product_id}' not found.", 404
         
-        if user_id not in df_reviews['id_user'].unique():  # Ensure df_reviews is accessible here
+        if user_id not in pivot_table.index:
             return f"User ID '{user_id}' not found.", 404
+        else:
+            user_idx = pivot_table.index.get_loc(user_id)
 
         sim_scores_tfidf = list(enumerate(cosine_sim_tfidf[idx]))
-        sim_scores_cf = list(enumerate(cosine_sim_cf[idx]))
+        sim_scores_cf = list(enumerate(cosine_sim_cf[user_idx]))
 
         sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
         sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
@@ -148,14 +159,20 @@ def get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_t
         else:
             sim_scores_tfidf = sim_scores_tfidf[1:]
             sim_scores_cf = sim_scores_cf[1:]
-        
+
+        sim_scores_cf_product = get_cf_product_scores(sim_scores_cf, df_reviews, indices)
+
+        weight_tfidf = 0.38
+        weight_cf = 0.34
+        weight_num = 0.28
+
         combined_scores = {}
         for score in sim_scores_tfidf:
-            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * 0.38
-        for score in sim_scores_cf:
-            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * 0.34
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * weight_tfidf
+        for score in sim_scores_cf_product:
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * weight_cf
         for score in num_scores:
-            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * 0.28
+            combined_scores[score[0]] = combined_scores.get(score[0], 0) + score[1] * weight_num
         
         combined_scores = sorted(combined_scores.items(), key=lambda x: x[1], reverse=True)
 
@@ -344,7 +361,7 @@ def recommend():
     
     product_ids = list(set(product_ids.split(',')))
     
-    recommendations = get_recommendations(product_ids, user_id, df_products, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations)
+    recommendations = get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_table, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations)
     if isinstance(recommendations, tuple):
         return jsonify({"error": recommendations[0]}), recommendations[1]
 
