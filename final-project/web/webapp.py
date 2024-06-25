@@ -13,8 +13,14 @@ import requests
 nltk.download('stopwords')
 
 app = Flask(__name__)
+<<<<<<< HEAD:final-project/web/webapp.py
 app.secret_key = '8dadea2232c8bc81e3b557f2a9e9f7a2'
 
+=======
+CORS(app)
+
+# Function to clean text data
+>>>>>>> 697820016e26d42c07c62baf0976c3465a04f4c0:final-project/backend/app.py
 def clean_text(text):
     text = re.sub(r'[^\w\s]', '', text)
     text = text.lower()
@@ -606,7 +612,7 @@ def daftar_belanja():
 
 if __name__ == '__main__':
     # Load and clean data
-    df_products, df_reviews, df_products_cleaned = load_and_clean_data('./data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', './data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
+    df_products, df_reviews, df_products_cleaned = load_and_clean_data('../data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', '../data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
