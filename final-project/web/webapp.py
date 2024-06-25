@@ -231,7 +231,7 @@ def get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_tab
     return flattened_recommendations_sorted
 
 # User-Based Recommendation System Using Collaborative Filltering and Matrix Factorization Algorithms
-def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_recommendations=None):
+def get_user_based_recommendations(user_id, df_products, pivot_table, cosine_sim_cf, algo, n_recommendations=None):
     if user_id not in pivot_table.index:
         return f"User ID '{user_id}' not found.", 404
 
@@ -239,17 +239,16 @@ def get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_re
     user_ratings = pivot_table.loc[user_id]
 
     # Find similar users based on cosine similarity
-    similar_users = cosine_similarity(pivot_table)
-    similar_users_scores = list(enumerate(similar_users[user_idx]))
-    similar_users_scores = sorted(similar_users_scores, key=lambda x: x[1], reverse=True)
-    
-    if n_recommendations is not None:
-        similar_users_scores = similar_users_scores[1:n_recommendations+1]
-    else:
-        similar_users_scores = similar_users_scores[1:]
+    sim_scores_cf = list(enumerate(cosine_sim_cf[user_idx]))
+    sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
 
+    if n_recommendations is not None:
+        sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
+    else:
+        sim_scores_cf = sim_scores_cf[1:]
+    
     recommended_products = {}
-    for user in similar_users_scores:
+    for user in sim_scores_cf:
         similar_user_idx = user[0]
         similar_user_ratings = pivot_table.iloc[similar_user_idx]
         for product_id, rating in similar_user_ratings.items():
@@ -376,7 +375,7 @@ def recommend_user_based():
     if not user_id:
         return jsonify({"error": "Please provide user_id"}), 400
 
-    recommendations = get_user_based_recommendations(user_id, df_products, pivot_table, algo, n_recommendations)
+    recommendations = get_user_based_recommendations(user_id, df_products, pivot_table, cosine_sim_cf, algo, n_recommendations)
     if isinstance(recommendations, tuple):
         return jsonify({"error": recommendations[0]}), recommendations[1]
 
