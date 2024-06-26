@@ -554,7 +554,27 @@ def recommend_page():
         # Handle error response
         recommendations = []
 
-    return render_template('recommend_page.html', user_id=user_id, products=products, selected_products=selected_products_info, recommendations=recommendations)
+    # Fetch kategori 3 data
+    kategori_3_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=100')
+    if kategori_3_response.status_code == 200:
+        kategori_3_data = kategori_3_response.json()
+        # Count occurrences of each kategori_3
+        kategori_3_count = {}
+        for item in kategori_3_data:
+            kategori_3 = item['kategori_3']
+            if kategori_3 in kategori_3_count:
+                kategori_3_count[kategori_3] += 1
+            else:
+                kategori_3_count[kategori_3] = 1
+    else:
+        kategori_3_count = {}
+
+    return render_template('recommend_page.html', 
+                           user_id=user_id, 
+                           products=products, 
+                           selected_products=selected_products_info, 
+                           recommendations=recommendations, 
+                           kategori_3_count=kategori_3_count)
 
 @app.route('/save_selected_ids', methods=['POST'])
 def save_selected_ids():
@@ -606,7 +626,7 @@ def daftar_belanja():
 
 if __name__ == '__main__':
     # Load and clean data
-    df_products, df_reviews, df_products_cleaned = load_and_clean_data('../data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', '../data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
+    df_products, df_reviews, df_products_cleaned = load_and_clean_data('./data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', './data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
