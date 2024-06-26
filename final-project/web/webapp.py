@@ -573,18 +573,23 @@ def recommend_page():
         # Handle error response
         recommendations = []
 
+    # Construct product_ids string from selected_ids
+    product_ids_str = ','.join(selected_ids) if selected_ids else ''
+
     # Fetch kategori 3 data
-    kategori_3_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=100')
-    if kategori_3_response.status_code == 200:
-        kategori_3_data = kategori_3_response.json()
-        # Count occurrences of each kategori_3
-        kategori_3_count = {}
-        for item in kategori_3_data:
-            kategori_3 = item['kategori_3']
-            if kategori_3 in kategori_3_count:
-                kategori_3_count[kategori_3] += 1
-            else:
-                kategori_3_count[kategori_3] = 1
+    kategori_3_count = {}
+    if product_ids_str:
+        kategori_3_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=100')
+        if kategori_3_response.status_code == 200:
+            kategori_3_data = kategori_3_response.json()
+            # Count occurrences of each kategori_3
+            for item in kategori_3_data:
+                kategori_3 = item['kategori_3']
+                if kategori_3 in kategori_3_count:
+                    kategori_3_count[kategori_3] += 1
+                else:
+                    kategori_3_count[kategori_3] = 1
+
     else:
         kategori_3_count = {}
 

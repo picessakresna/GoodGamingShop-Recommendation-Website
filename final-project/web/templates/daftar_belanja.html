@@ -31,11 +31,13 @@
                     <img src="{{ url_for('static', filename='/images/logo/logo.png') }}" alt="GGS logo" width="140" height="36">
                 </a>
                 <div class="header-user-actions">
-                    <button class="action-btn">
-                        <ion-icon name="person-outline"></ion-icon>
-                    </button>
-                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                    <a href="{{ url_for('reset_selected_ids') }}" class="reset-link">
                         <button class="action-btn">
+                            <ion-icon name="person-outline"></ion-icon>
+                        </button>
+                    </a>
+                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                        <button class="action-btn" id="daftar-belanja-btn">
                             <ion-icon name="bag-handle-outline"></ion-icon>
                         </button>
                     </a>
@@ -85,6 +87,7 @@
             </div>
         </nav>
     </header>
+
 
   <!--
     - MAIN
@@ -159,6 +162,52 @@
           });
       });
   </script>
+
+  <script>
+        $(document).ready(function() {
+            var selectedIds = [];
+
+            // Retrieve initial selected IDs from session
+            $.get('{{ url_for("get_selected_ids") }}', function(data) {
+                selectedIds = data.selected_ids;
+                console.log('Initial selected IDs:', selectedIds);
+            });
+
+            $('.btn-action').click(function() {
+                var productId = $(this).data('id');
+                if (!selectedIds.includes(productId)) {
+                    selectedIds.push(productId);
+                    console.log('Selected IDs:', selectedIds);
+                    saveSelectedIds();
+                }
+            });
+
+            // Reset button/link behavior
+            $('.reset-link').click(function(event) {
+                event.preventDefault();
+                $.post('{{ url_for("reset_selected_ids") }}', function() {
+                    window.location.href = "{{ url_for('index') }}";
+                });
+            });
+
+            // AJAX request to save selected IDs
+            function saveSelectedIds() {
+                $.post('{{ url_for("save_selected_ids") }}', { 'selected_ids[]': selectedIds }, function(response) {
+                    console.log('Selected IDs saved successfully');
+                });
+            }
+
+            // Handle click on the link to daftar_belanja
+            $('#daftar-belanja-btn').click(function(event) {
+                event.preventDefault();
+                var redirectUrl = $(this).closest('a').attr('href');
+                saveSelectedIds();
+                setTimeout(function() { // Delay to ensure IDs are saved before redirect
+                    window.location.href = redirectUrl;
+                }, 500);
+            });
+        });
+    </script>
   {% endblock %}
 </body>
 

@@ -29,11 +29,13 @@
                     <img src="{{ url_for('static', filename='/images/logo/logo.png') }}" alt="GGS logo" width="140" height="36">
                 </a>
                 <div class="header-user-actions">
-                    <button class="action-btn">
-                        <ion-icon name="person-outline"></ion-icon>
-                    </button>
-                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                    <a href="{{ url_for('reset_selected_ids') }}" class="reset-link">
                         <button class="action-btn">
+                            <ion-icon name="person-outline"></ion-icon>
+                        </button>
+                    </a>
+                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+                        <button class="action-btn" id="daftar-belanja-btn">
                             <ion-icon name="bag-handle-outline"></ion-icon>
                         </button>
                     </a>
@@ -84,10 +86,13 @@
         </nav>
     </header>
 
-    <main>
+
+   <main>
         <div class="container">
             <h3 class="page-title">Recommended For You</h3>
+            {% if kategori_3_count %}
             <p>The items recommended to you are based on what you've added to your cart, here the list</p>
+            {% endif %}
             <div class="product-main">
                 <div class="product-grid">
                     {% for product in selected_products %}
@@ -103,17 +108,17 @@
                         </div>
                     </div>
                     {% endfor %}
-                
                 </div>
             </div>
-            <p>Also based your previous purchases, that show in this graph</p>
 
-             <!-- D3.js Container -->
+            <p>Based on your previous purchases, that show in this graph:</p>
+            <!-- D3.js Container -->
             <div id="d3-container" style="display: flex; justify-content: center;"></div>
-
-            <p>So we use content based to make suggested based category, this graph of category based recommend items</p>
-
+            
+            {% if kategori_3_count %}
+            <p>So we use content based to make suggested based category, this graph of category based recommend items:</p>
             <div id="d3-container-2" style="display: flex; justify-content: center;"></div>
+            {% endif %}
 
             <p>We suggested you to buy this product</p>
             <div class="product-main">
@@ -131,7 +136,6 @@
                         </div>
                     </div>
                     {% endfor %}
-                
                 </div>
             </div>
         </div>
@@ -250,65 +254,111 @@
     
     </script>
 
+    {% if kategori_3_count %}
     <script>
-    // Second D3.js Bar Chart for Kategori 3
-    const kategori3Data = {{ kategori_3_count | tojson }};
-    const kategori3Array = Object.keys(kategori3Data).map(key => ({ category: key, count: kategori3Data[key] })).sort((a, b) => b.count - a.count);
+        const kategori3Data = {{ kategori_3_count | tojson }};
+        const kategori3Array = Object.keys(kategori3Data).map(key => ({ category: key, count: kategori3Data[key] })).sort((a, b) => b.count - a.count);
 
-    const margin2 = { top: 20, right: 30, bottom: 40, left: 200 };
-    const width2 = 1300;
-    const height2 = 400;
+        const margin2 = { top: 20, right: 30, bottom: 40, left: 200 };
+        const width2 = 1300;
+        const height2 = 400;
 
-    const svg2 = d3.select("#d3-container-2")
-        .append("svg")
-        .attr("width", width2)
-        .attr("height", height2)
-        .append("g")
-        .attr("transform", `translate(${margin2.left},${margin2.top})`);
+        const svg2 = d3.select("#d3-container-2")
+            .append("svg")
+            .attr("width", width2)
+            .attr("height", height2)
+            .append("g")
+            .attr("transform", `translate(${margin2.left},${margin2.top})`);
 
-    const x2 = d3.scaleLinear()
-        .domain([0, d3.max(kategori3Array, d => d.count)])
-        .range([0, width2 - margin2.left - margin2.right]);
+        const x2 = d3.scaleLinear()
+            .domain([0, d3.max(kategori3Array, d => d.count)])
+            .range([0, width2 - margin2.left - margin2.right]);
 
-    const y2 = d3.scaleBand()
-        .domain(kategori3Array.map(d => d.category))
-        .range([0, height2 - margin2.top - margin2.bottom])
-        .padding(0.1);
+        const y2 = d3.scaleBand()
+            .domain(kategori3Array.map(d => d.category))
+            .range([0, height2 - margin2.top - margin2.bottom])
+            .padding(0.1);
 
-    svg2.selectAll("rect")
-        .data(kategori3Array)
-        .enter()
-        .append("rect")
-        .attr("x", 0)
-        .attr("y", d => y2(d.category))
-        .attr("width", d => x2(d.count))
-        .attr("height", y2.bandwidth())
-        .attr("fill", "steelblue");
+        svg2.selectAll("rect")
+            .data(kategori3Array)
+            .enter()
+            .append("rect")
+            .attr("x", 0)
+            .attr("y", d => y2(d.category))
+            .attr("width", d => x2(d.count))
+            .attr("height", y2.bandwidth())
+            .attr("fill", "steelblue");
 
-    svg2.selectAll(".count-label")
-        .data(kategori3Array)
-        .enter()
-        .append("text")
-        .attr("class", "count-label")
-        .attr("x", d => x2(d.count) + 10)
-        .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
-        .attr("dy", "0.35em")
-        .style("font-size", "12px")
-        .text(d => d.count);
+        svg2.selectAll(".count-label")
+            .data(kategori3Array)
+            .enter()
+            .append("text")
+            .attr("class", "count-label")
+            .attr("x", d => x2(d.count) + 10)
+            .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
+            .attr("dy", "0.35em")
+            .style("font-size", "12px")
+            .text(d => d.count);
 
-    svg2.selectAll(".category-label")
-        .data(kategori3Array)
-        .enter()
-        .append("text")
-        .attr("class", "category-label")
-        .attr("x", -10)
-        .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
-        .attr("dy", "0.35em")
-        .attr("text-anchor", "end")
-        .style("font-size", "10px")
-        .text(d => d.category);
+        svg2.selectAll(".category-label")
+            .data(kategori3Array)
+            .enter()
+            .append("text")
+            .attr("class", "category-label")
+            .attr("x", -10)
+            .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
+            .attr("dy", "0.35em")
+            .attr("text-anchor", "end")
+            .style("font-size", "10px")
+            .text(d => d.category);
     </script>
+    {% endif %}
 
+    <script>
+        $(document).ready(function() {
+            var selectedIds = [];
+
+            // Retrieve initial selected IDs from session
+            $.get('{{ url_for("get_selected_ids") }}', function(data) {
+                selectedIds = data.selected_ids;
+                console.log('Initial selected IDs:', selectedIds);
+            });
+
+            $('.btn-action').click(function() {
+                var productId = $(this).data('id');
+                if (!selectedIds.includes(productId)) {
+                    selectedIds.push(productId);
+                    console.log('Selected IDs:', selectedIds);
+                    saveSelectedIds();
+                }
+            });
+
+            // Reset button/link behavior
+            $('.reset-link').click(function(event) {
+                event.preventDefault();
+                $.post('{{ url_for("reset_selected_ids") }}', function() {
+                    window.location.href = "{{ url_for('index') }}";
+                });
+            });
+
+            // AJAX request to save selected IDs
+            function saveSelectedIds() {
+                $.post('{{ url_for("save_selected_ids") }}', { 'selected_ids[]': selectedIds }, function(response) {
+                    console.log('Selected IDs saved successfully');
+                });
+            }
+
+            // Handle click on the link to daftar_belanja
+            $('#daftar-belanja-btn').click(function(event) {
+                event.preventDefault();
+                var redirectUrl = $(this).closest('a').attr('href');
+                saveSelectedIds();
+                setTimeout(function() { // Delay to ensure IDs are saved before redirect
+                    window.location.href = redirectUrl;
+                }, 500);
+            });
+        });
+    </script>
 
     <!-- ionicon link -->
     <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
