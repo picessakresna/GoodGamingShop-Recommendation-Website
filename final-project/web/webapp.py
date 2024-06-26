@@ -133,34 +133,47 @@ def get_cf_product_scores(sim_scores_cf, df_reviews, indices):
 
 # Content and User-based Recommendation System Using Collaborative Filtering, Matrix Factorization, and TF-IDF Algorithms
 def get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_table, indices, cosine_sim_tfidf, num_scores, cosine_sim_cf, algo, n_recommendations=None):
+    missing_ids = [product_id for product_id in product_ids if product_id not in indices]
+    if missing_ids:
+        return f"Product IDs '{', '.join(missing_ids)}' not found.", 404
+    
+    if user_id not in pivot_table.index:
+        return f"User ID '{user_id}' not found.", 404
+    else:
+        user_idx = pivot_table.index.get_loc(user_id)
+    
+    sim_scores_cf = list(enumerate(cosine_sim_cf[user_idx]))
+    sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
+
+    if n_recommendations is not None:
+        sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
+    else:
+        sim_scores_cf = sim_scores_cf[1:]
+
+    sim_scores_cf_product = get_cf_product_scores(sim_scores_cf, df_reviews, indices)
+    
+    product_indices_to_exclude = [indices[pid] for pid in product_ids if pid in indices]
+    sim_scores_cf_product = [(idx, score) for idx, score in sim_scores_cf_product if idx not in product_indices_to_exclude]
+    num_scores = [(idx, score) for idx, score in num_scores if idx not in product_indices_to_exclude]
+
+    sim_scores_cf_product = sorted(sim_scores_cf_product, key=lambda x: x[1], reverse=True)
+    num_scores = sorted(num_scores, key=lambda x: x[1], reverse=True)
+
+    if n_recommendations is not None:
+        sim_scores_cf_product = sim_scores_cf_product[:n_recommendations]
+        num_scores = num_scores[:n_recommendations]
+
     all_recommendations = []
     for product_id in product_ids:
-        try:
-            idx = indices[product_id]
-        except KeyError:
-            return f"Product ID '{product_id}' not found.", 404
-        
-        if user_id not in pivot_table.index:
-            return f"User ID '{user_id}' not found.", 404
-        else:
-            user_idx = pivot_table.index.get_loc(user_id)
+        idx = indices[product_id]
 
         sim_scores_tfidf = list(enumerate(cosine_sim_tfidf[idx]))
-        sim_scores_cf = list(enumerate(cosine_sim_cf[user_idx]))
-
         sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
-        sim_scores_cf = sorted(sim_scores_cf, key=lambda x: x[1], reverse=True)
-        num_scores = sorted(num_scores, key=lambda x: x[1], reverse=True)
         
         if n_recommendations is not None:
             sim_scores_tfidf = sim_scores_tfidf[1:n_recommendations+1]
-            sim_scores_cf = sim_scores_cf[1:n_recommendations+1]
-            num_scores = num_scores[:n_recommendations]
         else:
             sim_scores_tfidf = sim_scores_tfidf[1:]
-            sim_scores_cf = sim_scores_cf[1:]
-
-        sim_scores_cf_product = get_cf_product_scores(sim_scores_cf, df_reviews, indices)
 
         weight_tfidf = 0.38
         weight_cf = 0.34
