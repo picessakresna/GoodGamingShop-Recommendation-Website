@@ -176,8 +176,8 @@ def get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_tab
         else:
             sim_scores_tfidf = sim_scores_tfidf[1:]
 
-        weight_tfidf = 0.5
-        weight_cf = 0.3
+        weight_tfidf = 0.52
+        weight_cf = 0.28
         weight_num = 0.2
 
         combined_scores = {}
