@@ -168,6 +168,7 @@ def get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_tab
         idx = indices[product_id]
 
         sim_scores_tfidf = list(enumerate(cosine_sim_tfidf[idx]))
+        sim_scores_tfidf = [(idx, score) for idx, score in sim_scores_tfidf if idx not in product_indices_to_exclude]
         sim_scores_tfidf = sorted(sim_scores_tfidf, key=lambda x: x[1], reverse=True)
         
         if n_recommendations is not None:
