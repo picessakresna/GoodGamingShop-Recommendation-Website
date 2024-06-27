@@ -61,9 +61,9 @@ def load_and_clean_data(products_file, reviews_file):
 # Function to calculate product numeric features scores
 def calculate_product_scores(df_products_cleaned):
     # Define weights for each feature
-    discount_weight = 0.4
+    discount_weight = 0.2
     sales_weight = 0.1
-    rating_weight = 0.4
+    rating_weight = 0.6
     rating_counter_weight = 0.1
 
     # Initialize an empty list to store (idx, score) pairs
@@ -176,9 +176,9 @@ def get_recommendations(product_ids, user_id, df_products, df_reviews, pivot_tab
         else:
             sim_scores_tfidf = sim_scores_tfidf[1:]
 
-        weight_tfidf = 0.38
-        weight_cf = 0.34
-        weight_num = 0.28
+        weight_tfidf = 0.5
+        weight_cf = 0.3
+        weight_num = 0.2
 
         combined_scores = {}
         for score in sim_scores_tfidf:
