@@ -21,348 +21,341 @@
 
 <body>
 
-    <!-- HEADER -->
-    <header>
-        <div class="header-main">
-            <div class="container">
-                <a href="#" class="header-logo">
-                    <img src="{{ url_for('static', filename='/images/logo/logo.png') }}" alt="GGS logo" width="140" height="36">
-                </a>
-                <div class="header-user-actions">
-                    <a href="{{ url_for('reset_selected_ids') }}" class="reset-link">
-                        <button class="action-btn">
-                            <ion-icon name="person-outline"></ion-icon>
-                        </button>
-                    </a>
-                    <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
-                        <button class="action-btn" id="daftar-belanja-btn">
-                            <ion-icon name="bag-handle-outline"></ion-icon>
-                        </button>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <nav class="desktop-navigation-menu">
-            <div class="container">
-                <ul class="desktop-menu-category-list">
-                    <li class="menu-category">
-                        <a href="{{ url_for('home', user_id=user_id) }}" class="menu-title">Home</a>
-                    </li>
-                    <li class="menu-category">
-                        <a href="{{ url_for('all_items', user_id=user_id)}}" class="menu-title">All Items</a>
-                    </li>          
-                    <li class="menu-category">
-                        <a href="{{ url_for('recommend_page', user_id=user_id)}}" class="menu-title">Recommended</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-        <div class="mobile-bottom-navigation">
-            <button class="action-btn" data-mobile-menu-open-btn>
-                <ion-icon name="menu-outline"></ion-icon>
-            </button>
-            <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
-                <button class="action-btn">
-                    <ion-icon name="bag-handle-outline"></ion-icon>
-                </button>
-            </a>
+  <!-- HEADER -->
+  <header>
+    <div class="header-main">
+      <div class="container">
+        <a href="#" class="header-logo">
+          <img src="{{ url_for('static', filename='/images/logo/logo.png') }}" alt="GGS logo" width="140" height="36">
+        </a>
+        <div class="header-user-actions">
+          <a href="{{ url_for('reset_selected_ids') }}" class="reset-link">
             <button class="action-btn">
-                <ion-icon name="home-outline"></ion-icon>
+              <ion-icon name="person-outline"></ion-icon>
             </button>
-            <button class="action-btn">
-                <ion-icon name="heart-outline"></ion-icon>
+          </a>
+          <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+            <button class="action-btn" id="daftar-belanja-btn">
+              <ion-icon name="bag-handle-outline"></ion-icon>
             </button>
-            <button class="action-btn" data-mobile-menu-open-btn>
-                <ion-icon name="grid-outline"></ion-icon>
-            </button>
+          </a>
         </div>
-        <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
-            <div class="menu-top">
-                <h2 class="menu-title">Menu</h2>
-                <button class="menu-close-btn" data-mobile-menu-close-btn>
-                    <ion-icon name="close-outline"></ion-icon>
-                </button>
+      </div>
+    </div>
+    <nav class="desktop-navigation-menu">
+      <div class="container">
+        <ul class="desktop-menu-category-list">
+          <li class="menu-category">
+            <a href="{{ url_for('home', user_id=user_id) }}" class="menu-title">Home</a>
+          </li>
+          <li class="menu-category">
+            <a href="{{ url_for('all_items', user_id=user_id)}}" class="menu-title">All Items</a>
+          </li>
+          <li class="menu-category">
+            <a href="{{ url_for('recommend_page', user_id=user_id)}}" class="menu-title">Recommended</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+    <div class="mobile-bottom-navigation">
+      <button class="action-btn" data-mobile-menu-open-btn>
+        <ion-icon name="menu-outline"></ion-icon>
+      </button>
+      <a href="{{ url_for('daftar_belanja', user_id=user_id) }}" class="action-link">
+        <button class="action-btn">
+          <ion-icon name="bag-handle-outline"></ion-icon>
+        </button>
+      </a>
+      <button class="action-btn">
+        <ion-icon name="home-outline"></ion-icon>
+      </button>
+      <button class="action-btn">
+        <ion-icon name="heart-outline"></ion-icon>
+      </button>
+      <button class="action-btn" data-mobile-menu-open-btn>
+        <ion-icon name="grid-outline"></ion-icon>
+      </button>
+    </div>
+    <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
+      <div class="menu-top">
+        <h2 class="menu-title">Menu</h2>
+        <button class="menu-close-btn" data-mobile-menu-close-btn>
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+
+  <main>
+    <div class="container">
+      {% if kategori_3_count %}
+      <h3>Added To Cart Items :</h3>
+      {% endif %}
+      <div class="product-main">
+        <div class="product-grid">
+          {% for product in selected_products %}
+          <div class="showcase">
+            <div class="showcase-banner">
+              <img src="{{ url_for('static', filename='images/images/' ~ product.id_produk ~ '/image_' ~ product.id_produk ~ '_0.png') }}" alt="gambar 1" width="300" class="product-img default">
+              <img src="{{ url_for('static', filename='images/images/' ~ product.id_produk ~ '/image_' ~ product.id_produk ~ '_0.png') }}" alt="gambar 2" width="300" class="product-img hover">
             </div>
-        </nav>
-    </header>
-
-
-   <main>
-        <div class="container">
-            <h3 class="page-title">Recommended For You</h3>
-            {% if kategori_3_count %}
-            <p>The items recommended to you are based on what you've added to your cart, here the list</p>
-            {% endif %}
-            <div class="product-main">
-                <div class="product-grid">
-                    {% for product in selected_products %}
-                    <div class="showcase">
-                        <div class="showcase-banner">
-                            <img src="{{ url_for('static', filename='images/images/' ~ product.id_produk ~ '/image_' ~ product.id_produk ~ '_0.png') }}" alt="gambar 1" width="300" class="product-img default">
-                            <img src="{{ url_for('static', filename='images/images/' ~ product.id_produk ~ '/image_' ~ product.id_produk ~ '_1.png') }}" alt="gambar 2" width="300" class="product-img hover">
-                        </div>
-                        <div class="showcase-content">
-                            <a href="#">
-                                <h3 class="showcase-title">{{ product.nama_produk }}</h3>
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+            <div class="showcase-content">
+              <a href="#">
+                <h3 class="showcase-title">{{ product.nama_produk }}</h3>
+              </a>
             </div>
-
-            <p>Based on your previous purchases, that show in this graph:</p>
-            <!-- D3.js Container -->
-            <div id="d3-container" style="display: flex; justify-content: center;"></div>
-            
-            {% if kategori_3_count %}
-            <p>So we use content based to make suggested based category, this graph of category based recommend items:</p>
-            <div id="d3-container-2" style="display: flex; justify-content: center;"></div>
-            {% endif %}
-
-            <p>We suggested you to buy this product</p>
-            <div class="product-main">
-                <div class="product-grid">
-                    {% for recommend in recommendations %}
-                    <div class="showcase">
-                        <div class="showcase-banner">
-                            <img src="{{ url_for('static', filename='images/images/' ~ recommend.id_produk ~ '/image_' ~ recommend.id_produk ~ '_0.png') }}" alt="gambar 1" width="300" class="product-img default">
-                            <img src="{{ url_for('static', filename='images/images/' ~ recommend.id_produk ~ '/image_' ~ recommend.id_produk ~ '_1.png') }}" alt="gambar 2" width="300" class="product-img hover">
-                        </div>
-                        <div class="showcase-content">
-                            <a href="#">
-                                <h3 class="showcase-title">{{ recommend.nama_produk }}</h3>
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
+          </div>
+          {% endfor %}
         </div>
-    </main>
-   
+      </div>
 
-    <!-- D3.js Basic Script -->
-    <script>
+      <p><b>Based on your previous purchases</b>, that show in this graph:</p>
+      <!-- D3.js Container -->
+      <div id="d3-container" style="display: flex; justify-content: center;"></div>
+
+      {% if kategori_3_count %}
+      <p>So we use content based to make <b> suggested based category</b>, this graph of <b>category based recommend </b> items:</p>
+      <div id="d3-container-2" style="display: flex; justify-content: center;"></div>
+      {% endif %}
+
+      <h3>Recommended Items :</h3>
+      <div class="product-main">
+        <div class="product-grid" id="recommended-items-grid">
+          <!-- Recommended items will be dynamically added here -->
+        </div>
+        <button id="show-more-btn">Show More</button>
+      </div>
+    </div>
+  </main>
+
+
+  <!-- D3.js Basic Script -->
+  <script>
     // Extract categories from Flask-provided data
     const products = {{ products | tojson }};
     const categories = {};
 
     products.forEach(product => {
-        const category = product.kategori_3;
-        if (categories[category]) {
+      const category = product.kategori_3;
+      if (categories[category]) {
         categories[category]++;
-        } else {
+      } else {
         categories[category] = 1;
-        }
+      }
     });
 
     // Convert categories object to array
     const data = Object.entries(categories).map(([category, count]) => ({
-        category: category,
-        count: count
+      category: category,
+      count: count
     }));
 
     // Sort data in descending order based on count
     data.sort((a, b) => b.count - a.count);
 
     // D3.js setup
-    const width = 1300;  // Increased width for better centering
+    const width = 1300;
     const height = 400;
-    const margin = { top: 20, right: 30, bottom: 40, left: 200 };  // Adjusted margins for better fit and text wrapping
+    const margin = { top: 20, right: 30, bottom: 40, left: 200 };
 
     const svg = d3.select("#d3-container")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
     const x = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.count)])
-        .nice()
-        .range([0, width - margin.left - margin.right]);
+      .domain([0, d3.max(data, d => d.count)])
+      .range([0, width - margin.left - margin.right]);
 
     const y = d3.scaleBand()
-        .domain(data.map(d => d.category))
-        .range([0, height - margin.top - margin.bottom])
-        .padding(0.1);
+      .domain(data.map(d => d.category))
+      .range([0, height - margin.top - margin.bottom])
+      .padding(0.1);
 
     // Add bars
     svg.selectAll("rect")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("x", 0)
-        .attr("y", d => y(d.category))
-        .attr("width", d => x(d.count))
-        .attr("height", y.bandwidth())
-        .attr("fill", "teal");
+      .data(data)
+      .enter()
+      .append("rect")
+      .attr("x", 0)
+      .attr("y", d => y(d.category))
+      .attr("width", d => x(d.count))
+      .attr("height", y.bandwidth())
+      .attr("fill", "teal");
 
     // Add count labels
     svg.selectAll(".count-label")
-        .data(data)
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "count-label")
+      .attr("x", d => x(d.count) + 10)
+      .attr("y", d => y(d.category) + y.bandwidth() / 2)
+      .attr("dy", "0.35em")
+      .style("font-size", "12px")
+      .text(d => d.count);
+
+    // Add category labels
+    svg.selectAll(".category-label")
+      .data(data)
+      .enter()
+      .append("text")
+      .attr("class", "category-label")
+      .attr("x", -10)
+      .attr("y", d => y(d.category) + y.bandwidth() / 2)
+      .attr("dy", "0.35em")
+      .attr("text-anchor", "end")
+      .style("font-size", "16px")
+      .text(d => d.category);
+  </script>
+
+  {% if kategori_3_count %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // D3.js setup for the second graph
+      const kategori3Data = {{ kategori_3_count | tojson }};
+      const kategori3Array = Object.keys(kategori3Data).map(key => ({ category: key, count: kategori3Data[key] })).sort((a, b) => b.count - a.count);
+
+      const width2 = 1300;
+      const height2 = 400;
+      const margin2 = { top: 20, right: 30, bottom: 40, left: 200 };
+
+      const svg2 = d3.select("#d3-container-2")
+        .append("svg")
+        .attr("width", width2)
+        .attr("height", height2)
+        .append("g")
+        .attr("transform", `translate(${margin2.left},${margin2.top})`);
+
+      const x2 = d3.scaleLinear()
+        .domain([0, d3.max(kategori3Array, d => d.count)])
+        .range([0, width2 - margin2.left - margin2.right]);
+
+      const y2 = d3.scaleBand()
+        .domain(kategori3Array.map(d => d.category))
+        .range([0, height2 - margin2.top - margin2.bottom])
+        .padding(0.1);
+
+      svg2.selectAll("rect")
+        .data(kategori3Array)
+        .enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", d => y2(d.category))
+        .attr("width", d => x2(d.count))
+        .attr("height", y2.bandwidth())
+        .attr("fill", "steelblue");
+
+      svg2.selectAll(".count-label")
+        .data(kategori3Array)
         .enter()
         .append("text")
         .attr("class", "count-label")
-        .attr("x", d => x(d.count) + 10)  // Adjust position to be at the end of the bar + 10 pixels
-        .attr("y", d => y(d.category) + y.bandwidth() / 2)
+        .attr("x", d => x2(d.count) + 10)
+        .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
         .attr("dy", "0.35em")
         .style("font-size", "12px")
         .text(d => d.count);
 
-    // Add category labels with wrapping
-    svg.selectAll(".category-label")
-        .data(data)
+      svg2.selectAll(".category-label")
+        .data(kategori3Array)
         .enter()
         .append("text")
         .attr("class", "category-label")
-        .attr("x", 100)  // Adjust text positioning (increased gap)
-        .attr("y", d => y(d.category) + y.bandwidth() / 2)
+        .attr("x", -10)
+        .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
         .attr("dy", "0.35em")
         .attr("text-anchor", "end")
-        .style("font-size", "10px")
-        .text(d => d.category)
-        .call(wrap, 500);  // Call wrap function for text wrapping
+        .style("font-size", "16px")
+        .text(d => d.category);
+    });
+  </script>
+  {% endif %}
 
-    // Function to wrap text
-    function wrap(text, width) {
-        text.each(function() {
-        var text = d3.select(this),
-            words = text.text().split(/\s+/).reverse(),
-            word,
-            line = [],
-            lineNumber = 0,
-            lineHeight = 1.1,  // ems
-            y = text.attr("y"),
-            dy = parseFloat(text.attr("dy")),
-            tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y).attr("dy", dy + "em");
-        while (word = words.pop()) {
-            line.push(word);
-            tspan.text(line.join(" "));
-            if (tspan.node().getComputedTextLength() > width) {
-            line.pop();
-            tspan.text(line.join(" "));
-            line = [word];
-            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", `${++lineNumber * lineHeight + dy}em`).text(word);
-            }
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const recommendations = {{ recommendations | tojson }};
+    const recommendedItemsGrid = document.getElementById('recommended-items-grid');
+
+    let numShown = 0;
+    const itemsPerLoad = 4;
+
+    // Function to display recommendations
+    function displayNextItems(startIndex) {
+        for (let i = startIndex; i < Math.min(startIndex + itemsPerLoad, recommendations.length); i++) {
+          const recommend = recommendations[i];
+          const showcase = document.createElement('div');
+          showcase.classList.add('showcase');
+
+          const showcaseBanner = document.createElement('div');
+          showcaseBanner.classList.add('showcase-banner');
+
+          const img1 = document.createElement('img');
+          img1.src = `/static/images/images/${recommend.id_produk}/image_${recommend.id_produk}_0.png`;
+          img1.alt = 'gambar 1';
+          img1.width = 300;
+          img1.classList.add('product-img', 'default');
+
+          const img2 = document.createElement('img');
+          img2.src = `/static/images/images/${recommend.id_produk}/image_${recommend.id_produk}_0.png`;
+          img2.alt = 'gambar 2';
+          img2.width = 300;
+          img2.classList.add('product-img', 'hover');
+          
+          const scoreBadge = document.createElement('p');
+          scoreBadge.classList.add('showcase-badge');
+          scoreBadge.textContent = `Score Product: ${recommend.skor}`;
+
+          showcaseBanner.appendChild(img1);
+          showcaseBanner.appendChild(img2);
+          showcaseBanner.appendChild(scoreBadge);
+
+          const showcaseContent = document.createElement('div');
+          showcaseContent.classList.add('showcase-content');
+
+          const titleLink = document.createElement('a');
+          titleLink.href = '#';
+
+          const title = document.createElement('h3');
+          title.classList.add('showcase-title');
+          title.textContent = recommend.nama_produk;
+
+          titleLink.appendChild(title);
+          showcaseContent.appendChild(titleLink);
+
+          showcase.appendChild(showcaseBanner);
+          showcase.appendChild(showcaseContent);
+
+          recommendedItemsGrid.appendChild(showcase);
         }
-        });
+
+        // Check if all items have been shown
+        if (startIndex + itemsPerLoad >= recommendations.length) {
+        showMoreBtn.style.display = 'none'; // Hide the button if no more items to show
+        }
     }
 
-    
-    
-    </script>
+    // Initial display
+    displayNextItems(numShown);
 
-    {% if kategori_3_count %}
-    <script>
-        const kategori3Data = {{ kategori_3_count | tojson }};
-        const kategori3Array = Object.keys(kategori3Data).map(key => ({ category: key, count: kategori3Data[key] })).sort((a, b) => b.count - a.count);
+    // Show more button functionality
+    const showMoreBtn = document.getElementById('show-more-btn');
 
-        const margin2 = { top: 20, right: 30, bottom: 40, left: 200 };
-        const width2 = 1300;
-        const height2 = 400;
+    showMoreBtn.addEventListener('click', function () {
+        numShown += itemsPerLoad;
+        displayNextItems(numShown);
+    });
+    });
 
-        const svg2 = d3.select("#d3-container-2")
-            .append("svg")
-            .attr("width", width2)
-            .attr("height", height2)
-            .append("g")
-            .attr("transform", `translate(${margin2.left},${margin2.top})`);
 
-        const x2 = d3.scaleLinear()
-            .domain([0, d3.max(kategori3Array, d => d.count)])
-            .range([0, width2 - margin2.left - margin2.right]);
+  </script>
 
-        const y2 = d3.scaleBand()
-            .domain(kategori3Array.map(d => d.category))
-            .range([0, height2 - margin2.top - margin2.bottom])
-            .padding(0.1);
-
-        svg2.selectAll("rect")
-            .data(kategori3Array)
-            .enter()
-            .append("rect")
-            .attr("x", 0)
-            .attr("y", d => y2(d.category))
-            .attr("width", d => x2(d.count))
-            .attr("height", y2.bandwidth())
-            .attr("fill", "steelblue");
-
-        svg2.selectAll(".count-label")
-            .data(kategori3Array)
-            .enter()
-            .append("text")
-            .attr("class", "count-label")
-            .attr("x", d => x2(d.count) + 10)
-            .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
-            .attr("dy", "0.35em")
-            .style("font-size", "12px")
-            .text(d => d.count);
-
-        svg2.selectAll(".category-label")
-            .data(kategori3Array)
-            .enter()
-            .append("text")
-            .attr("class", "category-label")
-            .attr("x", -10)
-            .attr("y", d => y2(d.category) + y2.bandwidth() / 2)
-            .attr("dy", "0.35em")
-            .attr("text-anchor", "end")
-            .style("font-size", "10px")
-            .text(d => d.category);
-    </script>
-    {% endif %}
-
-    <script>
-        $(document).ready(function() {
-            var selectedIds = [];
-
-            // Retrieve initial selected IDs from session
-            $.get('{{ url_for("get_selected_ids") }}', function(data) {
-                selectedIds = data.selected_ids;
-                console.log('Initial selected IDs:', selectedIds);
-            });
-
-            $('.btn-action').click(function() {
-                var productId = $(this).data('id');
-                if (!selectedIds.includes(productId)) {
-                    selectedIds.push(productId);
-                    console.log('Selected IDs:', selectedIds);
-                    saveSelectedIds();
-                }
-            });
-
-            // Reset button/link behavior
-            $('.reset-link').click(function(event) {
-                event.preventDefault();
-                $.post('{{ url_for("reset_selected_ids") }}', function() {
-                    window.location.href = "{{ url_for('index') }}";
-                });
-            });
-
-            // AJAX request to save selected IDs
-            function saveSelectedIds() {
-                $.post('{{ url_for("save_selected_ids") }}', { 'selected_ids[]': selectedIds }, function(response) {
-                    console.log('Selected IDs saved successfully');
-                });
-            }
-
-            // Handle click on the link to daftar_belanja
-            $('#daftar-belanja-btn').click(function(event) {
-                event.preventDefault();
-                var redirectUrl = $(this).closest('a').attr('href');
-                saveSelectedIds();
-                setTimeout(function() { // Delay to ensure IDs are saved before redirect
-                    window.location.href = redirectUrl;
-                }, 500);
-            });
-        });
-    </script>
-
-    <!-- ionicon link -->
-    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <!-- ionicon link -->
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
 </body>
 

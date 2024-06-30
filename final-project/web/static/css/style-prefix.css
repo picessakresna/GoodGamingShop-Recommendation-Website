@@ -1580,7 +1580,7 @@ body::-webkit-scrollbar-thumb:hover { background: hsl(0, 0%, 70%); }
   position: absolute;
   top: 15px;
   left: 15px;
-  background: var(--ocean-green);
+  background: var(--eerie-black);
   font-size: var(--fs-8);
   font-weight: var(--weight-500);
   color: var(--white);
@@ -3240,4 +3240,21 @@ footer {
     max-width: 460px;
   }
 
+}
+
+#show-more-btn {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background-color: teal;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#show-more-btn:hover {
+  background-color: #00796b; /* Darker shade of teal on hover */
 }

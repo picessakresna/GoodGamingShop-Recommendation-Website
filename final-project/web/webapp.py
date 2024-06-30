@@ -578,7 +578,7 @@ def recommend_page():
     else:
         # Construct product_ids string from selected_ids
         product_ids_str = ','.join(selected_ids)
-        recommended_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=4')
+        recommended_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=120')
 
     # Handle the recommendation response
     if recommended_response.status_code == 200:
@@ -593,7 +593,7 @@ def recommend_page():
     # Fetch kategori 3 data
     kategori_3_count = {}
     if product_ids_str:
-        kategori_3_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=100')
+        kategori_3_response = requests.get(f'http://127.0.0.1:5000/recommend?product_ids={product_ids_str}&user_id={user_id}&n=10')
         if kategori_3_response.status_code == 200:
             kategori_3_data = kategori_3_response.json()
             # Count occurrences of each kategori_3
