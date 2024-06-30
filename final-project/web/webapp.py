@@ -49,11 +49,9 @@ def load_and_clean_data(products_file, reviews_file):
 
     # Clean product data
     df_products_cleaned = df_products.copy()
-    df_products_cleaned['deskripsi'] = df_products_cleaned['deskripsi'].apply(clean_text)
-    df_products_cleaned['kategori'] = df_products_cleaned['kategori'].apply(clean_text)
-    df_products_cleaned['nama_produk'] = df_products_cleaned['nama_produk'].apply(clean_text)
+    df_products_cleaned['kategori_3'] = df_products_cleaned['kategori_3'].apply(clean_text)
     df_products_cleaned.drop_duplicates(subset=['id_produk'], keep='first', inplace=True)
-    df_products_cleaned['combined_features'] = df_products_cleaned['kategori'].fillna('') + ' ' + df_products_cleaned['nama_produk'].fillna('') + ' ' + df_products_cleaned['deskripsi'].fillna('')
+    df_products_cleaned['combined_features'] = df_products_cleaned['kategori_3'].fillna('')
     df_products_cleaned = normalize_features(df_products_cleaned)
 
     return df_products, df_reviews, df_products_cleaned
@@ -61,9 +59,9 @@ def load_and_clean_data(products_file, reviews_file):
 # Function to calculate product numeric features scores
 def calculate_product_scores(df_products_cleaned):
     # Define weights for each feature
-    discount_weight = 0.2
+    discount_weight = 0.1
     sales_weight = 0.1
-    rating_weight = 0.6
+    rating_weight = 0.7
     rating_counter_weight = 0.1
 
     # Initialize an empty list to store (idx, score) pairs
@@ -664,7 +662,7 @@ def daftar_belanja():
 
 if __name__ == '__main__':
     # Load and clean data
-    df_products, df_reviews, df_products_cleaned = load_and_clean_data('./data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', './data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
+    df_products, df_reviews, df_products_cleaned = load_and_clean_data('../data-collection-preprocessing/data-produk/clean_product-goodgamingshop.csv', '../data-collection-preprocessing/data-ulasan-clean/clean_data-ulasan-goodgamingstore.csv')
 
     # Calculate TF-IDF cosine similarity
     cosine_sim_tfidf = calculate_tfidf_cosine_similarity(df_products_cleaned)
